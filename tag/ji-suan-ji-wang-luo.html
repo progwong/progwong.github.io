@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+
+Name       : Brown Stone  
+Description: A two-column, fixed-width design with dark color scheme.
+Version    : 1.0
+Released   : 20100928
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>Progwong - 计算机网络</title>
+<link href="/theme/css/style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="/" type="application/atom+xml" rel="alternate" title="Progwong ATOM Feed" />
+</head>
+<body>
+<div id="wrapper">
+	<div id="page">
+		<div id="page-bgtop">
+			<div id="page-bgbtm">
+ 
+        
+				<div id="content">
+					<div class="post">
+						<h2 class="title"><a href="/tcp10wen.html">TCP10问</a></h2>
+						<p class="meta"><span class="date">Le  </span><span class="posted">Par <a href="#">Progwong</a></span><span>&nbsp; | Catégorie : <a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></span></p>
+					<p class="meta">Tags : <span><a href="/tag/ji-suan-ji-wang-luo.html">计算机网络</a> / </span>
+</p>
+						<div style="clear: both;">&nbsp;</div>
+						<div class="entry">
+						 <h3>1.TCP建立连接时需要几次握手， 断开连接需要几次握手？</h3>
+<p>TCP建立连接需要三次握手， 断开连接要四次握手。现有客户端A发送数据到服务端B：
+-  在建立连接时客户端首先发送SYN包请求建立连接。
+- 当服务器收到SYN包后发送ACK+SYN包针对受到的SYN包应答。
+- 客户端受到服务端的ACK应答后发送ACK包，针对SYN的确认应答。此时三次握手建立连接。</p>
+<p>当客户端要断开连接时共四次握手：
+- 客户端发送FIN包请求断开连接。
+- 服务器受到客户端消息， 发送ACK包应答。
+- 服务端发送FIN包请求断开连接。
+- 客户端发送ACK应该服务器的断开请求。</p>
+<h3>2.客户端每发送一个包， 服务器都要返回确认应答吗</h3>
+<p>当客户端每次发送数据包时， 服务器端不一定发送确认应答， 当引入滑动窗口概念后，为了减少网络消耗。服务器可以每接受到两个请求包再做一次应答(延迟应答)， 也可以接受完包后，将处理完的数据一起作为返回数据(稍代应答)。</p>
+<h3>3.TCP 发送/接受数据的大小</h3>
+<p>TCP在三次握手建立连接时就会确定发送数据包的大小MSS(Maximun Segment Size)。在建立连接时， TCP请求/确认包的首部会写入MSS信息。此时会选择一个较小的MISS作为每次发送数据的最大长度。 当TCP发送大量数据的时候， 会将数据分割成不超过MSS的数据分批发送。</p>
+<h3>4.TCP如何将大量数据切片处理后发送/重发</h3>
+<p>首先TCP包的首部中有两个字段序列号(Destination Port), 确认应答号(Acknowledgement Number)。客户端对发送的数据在首部的序列号中写入数据段的编号， 服务器收到数据段后查询序列号跟数据的长度，并计算出下次应该接受的序列号并写入确认应答号作为确认应答发送出去。TCP根据序列号根和确认应答号将大量数据切片发送。</p>
+<h3>5.TCP窗口有什么用</h3>
+<p>TCP通过窗口提高发送确认应答速度。TCP传输以一个段为单位，每发送一次进行一次确认应答。包的往返时间越长通信性能越低。为了解决这个问题TCP引入的窗口的概念， 此时TCP并不是等到接受到确认应答后才发送数据。 而是一次性发送多个数据段(发送数据段的多少取决于窗口的大小)， 主机在未收到确认回复之前是要保存已经发送过的数据， 为的是重新发送。</p>
+<p><img alt="TCP_窗口_发送.png" src="http://upload-images.jianshu.io/upload_images/1803273-66bb1f88c9b45618.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"></p>
+<h3>6. 在使用窗口时， 服务器没有收到某一个数据段， 或者主机没有收到服务器的确认消息怎么办</h3>
+<p>窗口在一定程度上比较大时， 即使有少部分的确认应答丢失时， 也不会进行数据重发。可以通过下一个确认应答确认。</p>
+<p><img alt="窗口丢失确认应答.png" src="http://upload-images.jianshu.io/upload_images/1803273-78c0663df4811022.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"></p>
+<p>上图中， 窗口丢失了1001的确认应答。虽然客户端没有收到相应的确认应答。 但是当收到2001的确认应答（提示服务器， 我想收到从2001开始的数据）时，就会以为服务器收到了1001的数据段。</p>
+<p>当一段报文丢失导致服务器没有收到， 那么服务器就会发送报文提示客户端（服务器要接收从xxxx开始的报文）。如果客户端连续收到相同的请求时， 则会发送相应的数据报文。</p>
+<p><img alt="窗口报文丢失重发.png" src="http://upload-images.jianshu.io/upload_images/1803273-3c34c782a069f5f9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"></p>
+<h3>7.窗口大小的值是由谁决定的</h3>
+<p>窗口的大小是由接受端主机决定的， TCP首部中专门有一个字段来通知窗口的大小。接受主机将自己的缓冲区大小放入这个字段中通知给发送端(根据缓冲区的大小， 随时设置窗口大小发送给发送段从而控制发送量)。发送端会根据接受主机提示， 对数据的发送量进行控制。</p>
+<p><img alt="根据缓冲区大小控制窗口.png" src="http://upload-images.jianshu.io/upload_images/1803273-564d5e9e322cac97.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240"></p>
+<h3>8.刚开始通信的时候， 窗口的大小是如何确定的**</h3>
+<p>由于两台主机间的网络可能很复杂，通过广域网时，中间的路由器转发能力可能是瓶颈。也就是说，如果一方简单的按照另一方主机三次握手时通告的滑动窗口大小来发送数据的话，可能会使得网络上的转发路由器性能雪上加霜，最终丢失更多的分组。在通信一开始就会通过叫做慢启动的算法得一个值， 对发送数量进行控制。这个值就是所谓的阻塞窗口， 阻塞窗口的大小不会超过滑动窗口。</p>
+<h3>9.MSS会改变了吗?</h3>
+<p>MSS就是为了避免IP层分片，在建立握手时告知对方期望接收的MSS值并不一定靠得住。因为这个值是预估的，TCP连接上的两台主机若处于不同的网络中，那么，连接上可能有许多中间网络，这些网络分别具有不同的数据链路层，这样，TCP连接上有许多个MTU。特别是，若中间途径的MTU小于两台主机所在的网络MTU时，选定的MSS仍然太大了，会导致中间路由器出现IP层的分片。所以这个时候需要重新计算MSS大小。</p>
+<p>怎样避免中间网络可能出现的分片呢？
+通过IP头部的DF标志位，这个标志位是告诉IP报文所途经的所有IP层代码：不要对这个报文分片。如果一个IP报文太大必须要分片，则直接返回一个ICMP错误，说明必须要分片了，且待分片路由器网络接受的MTU值。这样，连接上的发送方主机就可以重新确定MSS。</p>
+<h3>10. Nagle算法有什么用？</h3>
+<p>Nagle算法主要是提高网络利用率。如果发送端有数据，但是发送端数据很小的话则进行延迟发送的一种机制。各种做法可能造成网络延迟。
+- 延迟确认应答
+  如果接受端受到消息后立即应答的话， 那么可能会返回一个小的窗口值(刚接收完缓冲区比较满)。而是选择过一段时间应应答。事实上也不需要每次接受都需要应答。据大多数采用接收两个数据段返回一次应答。
+- 稍带应答
+TCP包中既能发送数据也能发送应答的一种机制。不过捎带应答需要服务器处理完数据并将处理完回执的数据返回为止。</p>	
+						</div>
+					</div>
+					<div style="clear: both;">&nbsp;</div>
+				</div>
+				<div id="sidebar">
+					<div id="logo">
+						<h1><a href="">Progwong</a></h1>
+					</div>
+					<div id="menu">
+						<ul>
+							<li ><a href="">Home</a></li>
+							<li ><a href="/archives.html">Archives</a></li>
+						</ul>
+					</div>
+					<ul>
+						<li>
+							<h2>Catégories</h2>
+							<ul>
+								 <li ><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
+								 <li ><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
+								 <li ><a href="/category/python.html">Python</a></li>
+								 <li ><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>
+							</ul>
+						</li>
+						<li>
+						        <h2>Tags</h2>
+						        <ul>
+                                                                <li><a href="/tag/python.html">Python</a></li>
+                                                                <li><a href="/tag/dai-ma-you-hua.html">代码优化</a></li>
+                                                                <li><a href="/tag/ji-suan-ji-wang-luo.html">计算机网络</a></li>
+                                                                <li><a href="/tag/pa-chong.html">爬虫</a></li>
+                                                                <li><a href="/tag/shu-ju-jie-gou.html">数据结构</a></li>
+						        </ul>
+						</li>
+						
+						
+					</ul>
+				</div>
+				<!-- end #sidebar -->
+				<div style="clear: both;">&nbsp;</div>
+			</div>
+		</div>
+	</div>
+	<!-- end #page -->
+
+<div id="footer">
+	<p>Copyright (c) 2008 Sitename.com. All rights reserved. Design by <a href="http://www.freecsstemplates.org/">CSS Templates</a>.</p>
+	<p>Proudly powered by <a href="http://alexis.notmyidea.org/pelican/">pelican</a>, which takes great advantages of <a href="http://python.org">python</a>.
+</p>
+</div>
+<!-- end #footer -->
+</body>
+</html>

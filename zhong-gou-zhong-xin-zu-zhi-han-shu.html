@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+
+Name       : Brown Stone  
+Description: A two-column, fixed-width design with dark color scheme.
+Version    : 1.0
+Released   : 20100928
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>重构——重新组织函数</title>
+<link href="/theme/css/style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="/" type="application/atom+xml" rel="alternate" title="Progwong ATOM Feed" />
+</head>
+<body>
+<div id="wrapper">
+	<div id="page">
+		<div id="page-bgtop">
+			<div id="page-bgbtm">
+    
+                        	<div id="content">
+					<div class="post">
+						<h2 class="title"><a href="zhong-gou-zhong-xin-zu-zhi-han-shu.html">重构——重新组织函数</a></h2>
+						<p class="meta"><span class="date">Le 日 29 一月 2017 </span><span class="posted">Par <a href="#">Progwong</a></span><span>&nbsp; | Catégorie : <a href="/category/dai-ma-you-hua.html">代码优化</a></span></p>
+					<p class="meta">Tags : <span><a href="/tag/python.html">Python</a> / </span>
+<span><a href="/tag/dai-ma-you-hua.html">代码优化</a> / </span>
+</p>	
+						<div style="clear: both;">&nbsp;</div>
+						<div class="entry">
+						 <p>大多数时候函数太过于冗长复杂， 或者是难以理解，我们要对函数进行整理。</p>
+<h4>Extract Method (提炼函数)</h4>
+<p><code>将冗长函数中的一段代码独立出来到一个函数中， 并让函数名称解释函数用途。独立出来的函数是短而命名良好的函数（1. 函数粒度小， 则被复用的机会就更大。 2. 高层函数读起来就像一系列注释。函数覆写会更容易些。）。</code></p>
+<p>Example</p>
+<div class="highlight"><pre><span></span># 重构前
+def print_text():
+    print(&quot;### this is header ###&quot;)
+    print(&quot; this is body&quot;)
+    print(&quot;### this is footer ###&quot;)
+</pre></div>
+
+
+<div class="highlight"><pre><span></span># 重构后
+def print_header():
+    print(&quot;### this is header ###&quot;)
+
+def print_body():
+    print(&quot;this is body&quot;)
+
+def print_footer():
+    print(&quot;### this is footer  ###&quot;)
+
+def print_text():
+    print_header()
+    print_body()
+    print_footer()
+ ```
+
+##### Inline Method(内联函数)
+
+ `当一个函数内容与函数名称同样清楚易懂时， 在函数调用点插入函数本地， 然后移除该函数。或者当你手上有一群不合理的函数，你可以将他们都内联到一个大型函数中， 再提取中合理的小型函数。` 
+</pre></div>
+
+
+<h1>重构前</h1>
+<p>def more_than_five_late_deliveries(_number):
+   return _number &gt; 5</p>
+<p>def get_rating(_number):
+    return 2 if more_than_five_late_deliveries(_number)  else 1</p>
+<h1>重构后</h1>
+<p>def get_rating(_number):
+    return  2 if _number &gt; 5  else 1</p>
+<div class="highlight"><pre><span></span>##### Inline Temp (内联临时变量)
+` 你有一个临时变量， 只被简单表带时赋值一次， 而它妨碍了其他的重构手。 将所有对该变量的引用动作， 替换为对它赋值的那个表达式自身。`
+
+Example
+</pre></div>
+
+
+<p>base_price = order.base_price()
+return base_price &gt; 1000</p>
+<h1>重构后</h1>
+<p>return order.basse_price() &gt; 1000</p>
+<div class="highlight"><pre><span></span>##### Repalce Temp with Query(以查询取代临时变量)
+
+`局部变量使得代码难以被提炼——因为临时变量只能在所属的函数内使用， 所以它会驱使你写更长的函数。 如果把临时变量替换为一个查询， 那么同一个类中的所有函数都会得到这份信息`
+
+  找出被赋值一次的临时变量， 将临时变量等号右边的部分提炼到一个函数中。 
+
+Example
+</pre></div>
+
+
+<p>class Counter:
+    def <strong>init</strong>(self, quantity, item_price):
+        self.quantity = quantity
+        self.item_price = self.item_price</p>
+<div class="highlight"><pre><span></span>def get_price(self):
+    base_price = self.quantity * self.item_price
+    discount_factor = 0
+    if base_price &gt; 1000:
+        discount_factor = 0.95
+    else:
+        discount_factor = 0.98
+   return base_price * discount_factor
+</pre></div>
+
+
+<h1>重构后</h1>
+<p>class Counter:
+    """将查询作为一个函数单独提炼出来， 同一个类的其他函数都可以用到这些信息 """
+    def <strong>init</strong>(self, quantity, item_price):
+        self.quantity = quantity
+        self.item_price = self.item_price</p>
+<div class="highlight"><pre><span></span>@property
+def base_price(self):
+    return self.quantity * self.item_price
+
+@property
+def discount_factor(self):
+    if self.base_price &gt; 1000:
+        return 0.95
+    return 0.98
+
+def get_price(self):
+   return self.base_price * self.discount_factor
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>##### Introduce Explain Variable(引入解释性变量)
+`将复杂表达式（或其中一部分）的结果放进一个临时变量， 此变量的名称来解释表达式用途。临时变量可以更好的帮助你理解表达式的意思`
+
+Example
+</pre></div>
+
+
+<p>if platform.upper().find("MAC") &gt; -1 and browser.upper().find("IE") &gt; -1 and resize &gt; 0:
+    return True
+else:
+    return Fase</p>
+<h1>重构后</h1>
+<p>is_mac = platform.upper().find("MAC") &gt; -1 
+is_ie_browsesr = browser.upper().find("IE") &gt; -1
+was_resize = resize &gt; 0</p>
+<p>if is_mac and is_id_browser and was_resize:
+    return True
+else:
+    return False</p>
+<div class="highlight"><pre><span></span>##### Split Temporary Variable (分解临时变量)
+`临时变量应该只被赋值一次， 如果他们被赋值超过一次， 就意味着他们在函数中承担了一个以上的责任。 每个变量应该只被赋值一次， 针对每次赋值， 创造一个独立的， 对应的临时变量`
+
+##### Remove Assignments to Parameters(移除对参数的赋值)
+`对参数赋值，降低了代码的清晰度， 而且混用了按值传递和按引用传递这两种参数传递方式。 应该建立一个临时变量， 把待处理的参数赋值给它`
+
+Example
+</pre></div>
+
+
+<p>def get_value(input_value, quantity):
+    if input_value &gt; 50:
+        input_value -= 2
+    return input_value * quantity</p>
+<h1>重构后</h1>
+<p>def get_value(input_value, quantity):
+    result = input_value
+    if result &gt; 50:
+        result -= 2
+    return result * quantity </p>
+<div class="highlight"><pre><span></span>##### Replace Method with Method object (以函数对象取代函数)
+`如果有一个大函数， 对其中的变量无法使用Extract Method， 将这个函数放入一个单独的对象中， 如此以来局部变量就变成了对象中的字段。 然后你可以在同一个对象中将这个大型函数分解为多个小型函数`
+
+Example 
+</pre></div>
+
+
+<p>class Account：
+    def delta(self):
+        pass</p>
+<div class="highlight"><pre><span></span>def gamma(self, input_val, quantity, year_to_date):
+    important_value1 = input_val * quantity + self.delta()
+    important_value2 = input_val * year_to_date + 100
+
+    if year_to_date - important_value1 &gt; 100:
+        important_value2 -= 20
+
+    important_value3 = important_value2 * 7
+    return importantValue3 - 2 * importantValue1
+</pre></div>
+
+
+<h1>重构后</h1>
+<p>class Gamma:
+    """创建一个新类， 加入构造函数. 把原函数搬到compute()"""</p>
+<div class="highlight"><pre><span></span>def __init__(self, account, input_val, quantity, year_to_date):
+    self.account = account 
+    self.input_val = input_val
+    self.quantity = self.quantity
+    self.year_to_date = self.year_to_date
+
+def compute(self):
+    &quot;&quot;&quot;将原函数搬家移过来， 我们也可以对 compute 采取Extract Method. 不用打心传递参数的问题&quot;&quot;&quot;
+    important_value1 = self.input_val * self.quantity + self.account.delta()
+    important_value2 = self.input_val * self.year_to_date + 100
+
+    if self.year_to_date - self.important_value1 &gt; 100:
+        important_value2 -= 20
+
+    important_value3 = self.important_value2 * 7
+    return importantValue3 - 2 * importantValue1
+</pre></div>
+
+
+<p>class Account:
+    """修改原函数， 让它将它的工作委托给刚完成的这个函数对象"""
+    def delta(self):
+        pass</p>
+<div class="highlight"><pre><span></span>def gamma(self, input_val, quantity, year_to_date): 
+    return Gamma(self, input_val, quantity, year_to_date).compute()
+</pre></div>
+
+
+<p>```</p>
+<h5>Substitute Algorithm (替换算法)</h5>
+<p><code>将函数本体替换为另一个算法</code></p>	
+						</div>
+					</div>
+			      
+					<div style="clear: both;">&nbsp;</div>
+				</div>
+				<!-- end #content -->
+				<div id="sidebar">
+					<div id="logo">
+						<h1><a href="">Progwong</a></h1>
+					</div>
+					<div id="menu">
+						<ul>
+							<li ><a href="">Home</a></li>
+							<li ><a href="/archives.html">Archives</a></li>
+						</ul>
+					</div>
+					<ul>
+						<li>
+							<h2>Catégories</h2>
+							<ul>
+								 <li class="active"><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
+								 <li ><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
+								 <li ><a href="/category/python.html">Python</a></li>
+								 <li ><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>
+							</ul>
+						</li>
+						<li>
+						        <h2>Tags</h2>
+						        <ul>
+                                                                <li><a href="/tag/python.html">Python</a></li>
+                                                                <li><a href="/tag/dai-ma-you-hua.html">代码优化</a></li>
+                                                                <li><a href="/tag/ji-suan-ji-wang-luo.html">计算机网络</a></li>
+                                                                <li><a href="/tag/pa-chong.html">爬虫</a></li>
+                                                                <li><a href="/tag/shu-ju-jie-gou.html">数据结构</a></li>
+						        </ul>
+						</li>
+						
+						
+					</ul>
+				</div>
+				<!-- end #sidebar -->
+				<div style="clear: both;">&nbsp;</div>
+			</div>
+		</div>
+	</div>
+	<!-- end #page -->
+
+<div id="footer">
+	<p>Copyright (c) 2008 Sitename.com. All rights reserved. Design by <a href="http://www.freecsstemplates.org/">CSS Templates</a>.</p>
+	<p>Proudly powered by <a href="http://alexis.notmyidea.org/pelican/">pelican</a>, which takes great advantages of <a href="http://python.org">python</a>.
+</p>
+</div>
+<!-- end #footer -->
+</body>
+</html>

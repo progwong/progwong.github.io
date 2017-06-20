@@ -1,0 +1,793 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom"><title>A Pelican Blog - 代码优化</title><link href="/" rel="alternate"></link><link href="/feeds/dai-ma-you-hua.atom.xml" rel="self"></link><id>/</id><updated>2017-05-23T21:30:00+00:00</updated><entry><title>通过异常处理让代码更整洁</title><link href="/tong-guo-yi-chang-chu-li-rang-dai-ma-geng-zheng-ji.html" rel="alternate"></link><published>2017-05-23T21:30:00+00:00</published><updated>2017-05-23T21:30:00+00:00</updated><author><name></name></author><id>tag:None,2017-05-23:/tong-guo-yi-chang-chu-li-rang-dai-ma-geng-zheng-ji.html</id><summary type="html">&lt;p&gt;&lt;strong&gt;前言&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;记得刚写正式写项目的时候， 编写代码的时候总会由于一些原因， 比如传入参数的不规范、自己代码逻辑不够完善、所查找数据不存在等原因，总会抛出一些异常如&lt;code&gt;ValueError&lt;/code&gt;、&lt;code&gt;ZeroDivisionError&lt;/code&gt;。 每次遇到类似情况的时候都是让我头疼的时候， 然后会粗暴的捕获异常(直接excetp &lt;code&gt;Exception&lt;/code&gt;, 或者except）， 反正就是通过异常基类来达到一次性处理所有异常的目的。 然后review代码的时候就被人骂了， 说不规范。 当时不以为然，感觉自己用的挺爽的。 等有了一定经验后觉得当时的方式不但没有给自己带来好处， 反而加重了调试的困难。 再到后来，逐渐发现正确的使用异常可以使得代码更清晰， 项目更具有扩展性， 反正好处多多。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;后来， 在实践中自己开发独立的模块时。自己会定义一些异常来帮助自己更好的组织代码。 下面就说说个人在实践中的处理方法。&lt;/p&gt;
+&lt;h3&gt;一、 精确的捕获异常&lt;/h3&gt;
+&lt;p&gt;我们有个发送信息的函数&lt;code&gt;send_message&lt;/code&gt;， 如果信息发送成功了返回&lt;code&gt;True&lt;/code&gt;, 失败返回&lt;code&gt;False&lt;/code&gt;。 HTTP请求处理函数&lt;code&gt;vertify_code_handler&lt;/code&gt;负责发送注册验证码。伪代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;myapp&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;settings&lt;/span&gt;
+  &lt;span class="n"&gt;msg_server&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MessageSender&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;api_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;APP_KEY …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;&lt;strong&gt;前言&lt;/strong&gt;&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;记得刚写正式写项目的时候， 编写代码的时候总会由于一些原因， 比如传入参数的不规范、自己代码逻辑不够完善、所查找数据不存在等原因，总会抛出一些异常如&lt;code&gt;ValueError&lt;/code&gt;、&lt;code&gt;ZeroDivisionError&lt;/code&gt;。 每次遇到类似情况的时候都是让我头疼的时候， 然后会粗暴的捕获异常(直接excetp &lt;code&gt;Exception&lt;/code&gt;, 或者except）， 反正就是通过异常基类来达到一次性处理所有异常的目的。 然后review代码的时候就被人骂了， 说不规范。 当时不以为然，感觉自己用的挺爽的。 等有了一定经验后觉得当时的方式不但没有给自己带来好处， 反而加重了调试的困难。 再到后来，逐渐发现正确的使用异常可以使得代码更清晰， 项目更具有扩展性， 反正好处多多。&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;后来， 在实践中自己开发独立的模块时。自己会定义一些异常来帮助自己更好的组织代码。 下面就说说个人在实践中的处理方法。&lt;/p&gt;
+&lt;h3&gt;一、 精确的捕获异常&lt;/h3&gt;
+&lt;p&gt;我们有个发送信息的函数&lt;code&gt;send_message&lt;/code&gt;， 如果信息发送成功了返回&lt;code&gt;True&lt;/code&gt;, 失败返回&lt;code&gt;False&lt;/code&gt;。 HTTP请求处理函数&lt;code&gt;vertify_code_handler&lt;/code&gt;负责发送注册验证码。伪代码如下：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;myapp&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;settings&lt;/span&gt;
+  &lt;span class="n"&gt;msg_server&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MessageSender&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;api_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;APP_KEY&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  
+  &lt;span class="n"&gt;api_secret&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;APP_SECRET&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_mobile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+      &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;Get phone number from request query&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+      &lt;span class="n"&gt;mobile&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;mobile&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;mobile&lt;/span&gt;
+
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;send_message&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mobile&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+      &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot; Send message to mobile phone&lt;/span&gt;
+&lt;span class="sd"&gt;      :retrun: return `True` if send success else return `False`&lt;/span&gt;
+&lt;span class="sd"&gt;      :rtype: `bool`&lt;/span&gt;
+&lt;span class="sd"&gt;      &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+      &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;msg_server&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;send&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mobile&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+          &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;success&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+               &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;
+      &lt;span class="k"&gt;except&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+         &lt;span class="k"&gt;pass&lt;/span&gt;
+      &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
+
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;vertify_code_handler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+      &lt;span class="n"&gt;mobile&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;get_mobile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;randint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;100000&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;999999&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+      &lt;span class="n"&gt;send_status&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;send_message&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mobile&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  &lt;span class="n"&gt;code&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;send_status&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;在 send_message 函数中我们的&lt;code&gt;except&lt;/code&gt; 捕获任何异常， 然后有异常出现的时候我们认为短信发送失败了。 不管他是什么异常反正我们认为短信发送失败了。 然后返回&lt;code&gt;False&lt;/code&gt; 就可以了。 这种做法在一定程度上是比较简单粗暴的。返回的结果可能没有错误。 但是考虑特殊情况， 如果我们传入参数有误的话(服务器获取手机号码的函数出现BUG)， 或者vertify_code_handler传入的request的某些属性有问题的话， send_message中的excpet会吃掉这些异常， 让人误以为发送短信的服务有问题 。 这样的话你很难找到发送失败的原因。&lt;/p&gt;
+&lt;h3&gt;二、 主动的抛出异常&lt;/h3&gt;
+&lt;p&gt;我们还是通过上面的例子来说明， 我们在获取手机号码这一步加了验证， 当手机号码不符合规范时候抛出异常&lt;code&gt;InvalidMobileException&lt;/code&gt;：&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;re&lt;/span&gt;
+  &lt;span class="kn"&gt;from&lt;/span&gt; &lt;span class="nn"&gt;myapp&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="n"&gt;settings&lt;/span&gt;
+
+  &lt;span class="n"&gt;msg_server&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;MessageSender&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;api_key&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;APP_KEY&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  
+  &lt;span class="n"&gt;api_secret&lt;/span&gt;&lt;span class="o"&gt;=&lt;/span&gt;&lt;span class="n"&gt;settings&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;APP_SECRET&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+  &lt;span class="n"&gt;RE_MOBILE_FORMATER&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="sa"&gt;r&lt;/span&gt;&lt;span class="s1"&gt;&amp;#39;^1[3578]\d{9}$|^147\d{8}&amp;#39;&lt;/span&gt;
+
+  &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="nc"&gt;InvalidMobileException&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="ne"&gt;Exception&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+      &lt;span class="k"&gt;pass&lt;/span&gt;
+
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_mobile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+      &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot;Get phone number from request query&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+      &lt;span class="n"&gt;mobile&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="s2"&gt;&amp;quot;mobile&amp;quot;&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="ow"&gt;not&lt;/span&gt; &lt;span class="n"&gt;re&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;match&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;RE_MOBILE_FOMATTER&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+          &lt;span class="k"&gt;raise&lt;/span&gt; &lt;span class="n"&gt;InvalidMobileException&lt;/span&gt;
+      &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;mobile&lt;/span&gt;
+
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;send_message&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mobile&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+      &lt;span class="sd"&gt;&amp;quot;&amp;quot;&amp;quot; Send message to mobile phone&lt;/span&gt;
+&lt;span class="sd"&gt;      :retrun: return `True` if send success else return `False`&lt;/span&gt;
+&lt;span class="sd"&gt;      :rtype: `bool`&lt;/span&gt;
+&lt;span class="sd"&gt;      &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+      &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="n"&gt;response&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;msg_server&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;send&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mobile&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;message&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+          &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="n"&gt;response&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;success&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+               &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;True&lt;/span&gt;
+      &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="n"&gt;MessageServerError&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
+
+  &lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;vertify_code_handler&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+      &lt;span class="k"&gt;try&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="n"&gt;mobile&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;get_mobile&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;request&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="k"&gt;except&lt;/span&gt; &lt;span class="n"&gt;InvalidMobileException&lt;/span&gt;&lt;span class="p"&gt;:&lt;/span&gt;
+          &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="bp"&gt;False&lt;/span&gt;
+      &lt;span class="n"&gt;code&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="nb"&gt;str&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;random&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;randint&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="mi"&gt;100000&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="mi"&gt;999999&lt;/span&gt;&lt;span class="p"&gt;))&lt;/span&gt;
+      &lt;span class="n"&gt;send_status&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;send_message&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;mobile&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt;  &lt;span class="n"&gt;code&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+      &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;send_status&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;我们自己定义了异常 &lt;code&gt;InvalidMobileException&lt;/code&gt;， 当手机号码不合规范的时候我们&lt;code&gt;raise InvalidMobileException&lt;/code&gt;。 这样在调用了&lt;code&gt;get_mobile&lt;/code&gt;这个函数的地方， 我们就可以通过捕获异常&lt;code&gt;InvalidMobileException&lt;/code&gt;来知道是否得到了合法的的手机号码。&lt;/p&gt;
+&lt;p&gt;当然我们可以通过另一种方法获得手机号码&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  def get_mobile(request):
+      &amp;quot;&amp;quot;&amp;quot;Get phone number from request query
+      :return: None or phone number
+      &amp;quot;&amp;quot;&amp;quot;
+      mobile = request.get(&amp;quot;mobile&amp;quot;)
+      if not re.match(RE_MOBILE_FOMATTER):
+           return None
+      return mobile
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;如果手机号码符合规范的时候我们返回手机号码， 否则返回&lt;code&gt;False&lt;/code&gt;, 但是这种方法相对于前面一种方法是比较不友好的。&lt;/p&gt;
+&lt;p&gt;原因很简单， 所有调用了&lt;code&gt;get_mobile&lt;/code&gt;这个函数的地方， 在获得手机号码后都要验证一次。 这乍看起来无所谓， 可是你有多个这样的函数的时候， 验证起来就相当痛苦！&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  def get_mobile(request):
+      &amp;quot;&amp;quot;&amp;quot;Get phone number from request query
+      :return: None or phone number
+      &amp;quot;&amp;quot;&amp;quot;
+      mobile = request.get(&amp;quot;mobile&amp;quot;)
+      if not re.match(RE_MOBILE_FOMATTER):
+           return None
+      return mobile
+
+  def get_password(request):
+      &amp;quot;&amp;quot;&amp;quot;Get password from request query
+      :return: None or password
+      &amp;quot;&amp;quot;&amp;quot;
+      password = request.get(&amp;quot;password&amp;quot;)
+      if not re.match(RE_PASSWORD_FOMATTER):
+           return None
+      return password
+
+  def test_handler(request):
+      mobile = get_mobile()
+      password = get_mobile()
+     if mobile is None:
+         return False, &amp;quot;invalid phone number&amp;quot; 
+     elif password is None：
+         return Fasle, &amp;quot;invalid password&amp;quot;
+     else:
+         return check_account(mobile, password)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;但是用了捕获异常的方法后， 上面的例子变得友好多了。  &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  def get_mobile(request):
+      &amp;quot;&amp;quot;&amp;quot;Get phone number from request query
+      :return: None or phone number
+      &amp;quot;&amp;quot;&amp;quot;
+      mobile = request.get(&amp;quot;mobile&amp;quot;)
+      if not re.match(RE_MOBILE_FOMATTER):
+          raise InvalidMobileException
+      return mobile
+
+  def get_password(request):
+      &amp;quot;&amp;quot;&amp;quot;Get password from request query
+      :return: None or password
+      &amp;quot;&amp;quot;&amp;quot;
+      password = request.get(&amp;quot;password&amp;quot;)
+      if not re.match(RE_PASSWORD_FOMATTER):
+           raise InvalidPasswordException
+      return password
+
+  def test_handler(request):
+      try:
+          mobile = get_mobile()
+          password = get_mobile()
+      except InvalidMoblieException:
+          return False, &amp;quot;invalid phone number&amp;quot; 
+      except  InvalidPasswordException):
+          return Fasle, &amp;quot;invalid password&amp;quot;
+      else:
+          return check_account(mobile, password)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;好像看起来比较容易一点了， 但是还是有点乱。 如果我们给自定义的一场中携带信息的话， 那么会让代码更美观。 &lt;/p&gt;
+&lt;h3&gt;三、 让异常携带信息&lt;/h3&gt;
+&lt;p&gt;还是接着上面的例子。  我们在定义异常或者抛出异常的时候， 我们给异常附加一些信息， 如状态码、错误消息等。 这样捕获一场的时候可以根据异常的错误信息来进行返回。 &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;  &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="n"&gt;InvalidMobileException&lt;/span&gt;(&lt;span class="nb"&gt;Exception&lt;/span&gt;):
+      &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;__init___&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;, &lt;span class="n"&gt;status_code&lt;/span&gt;=&lt;span class="mi"&gt;400&lt;/span&gt;, &lt;span class="n"&gt;error_msg&lt;/span&gt;=&lt;span class="s"&gt;&amp;quot;invalid  phone number&amp;quot;&lt;/span&gt;):
+          &lt;span class="k"&gt;self&lt;/span&gt;.&lt;span class="n"&gt;status_code&lt;/span&gt; = &lt;span class="n"&gt;status_code&lt;/span&gt;
+          &lt;span class="k"&gt;self&lt;/span&gt;.&lt;span class="n"&gt;error_msg&lt;/span&gt; = &lt;span class="n"&gt;error_msg&lt;/span&gt;   
+
+  &lt;span class="k"&gt;class&lt;/span&gt; &lt;span class="n"&gt;InvalidPasswordException&lt;/span&gt;(&lt;span class="nb"&gt;Exception&lt;/span&gt;):
+      &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;__init___&lt;/span&gt;(&lt;span class="k"&gt;self&lt;/span&gt;, &lt;span class="n"&gt;status_code&lt;/span&gt;=&lt;span class="mi"&gt;400&lt;/span&gt;, &lt;span class="n"&gt;error_msg&lt;/span&gt;=&lt;span class="s"&gt;&amp;quot;invalid  password&amp;quot;&lt;/span&gt;):
+          &lt;span class="k"&gt;self&lt;/span&gt;.&lt;span class="n"&gt;status_code&lt;/span&gt; = &lt;span class="n"&gt;status_code&lt;/span&gt;
+          &lt;span class="k"&gt;self&lt;/span&gt;.&lt;span class="n"&gt;error_msg&lt;/span&gt; = &lt;span class="n"&gt;error_msg&lt;/span&gt;   
+
+  &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;get_mobile&lt;/span&gt;(&lt;span class="n"&gt;request&lt;/span&gt;):
+      &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;Get phone number from request query&lt;/span&gt;
+&lt;span class="s"&gt;      :return: None or phone number&lt;/span&gt;
+&lt;span class="s"&gt;      &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+      &lt;span class="n"&gt;mobile&lt;/span&gt; = &lt;span class="n"&gt;request&lt;/span&gt;.&lt;span class="n"&gt;get&lt;/span&gt;(&lt;span class="s"&gt;&amp;quot;mobile&amp;quot;&lt;/span&gt;)
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;not&lt;/span&gt; &lt;span class="nb"&gt;re&lt;/span&gt;.&lt;span class="n"&gt;match&lt;/span&gt;(&lt;span class="n"&gt;RE_MOBILE_FOMATTER&lt;/span&gt;):
+          &lt;span class="n"&gt;raise&lt;/span&gt; &lt;span class="n"&gt;InvalidMobileException&lt;/span&gt;
+      &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;mobile&lt;/span&gt;
+
+  &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;get_password&lt;/span&gt;(&lt;span class="n"&gt;request&lt;/span&gt;):
+      &lt;span class="s"&gt;&amp;quot;&amp;quot;&amp;quot;Get password from request query&lt;/span&gt;
+&lt;span class="s"&gt;      :return: None or password&lt;/span&gt;
+&lt;span class="s"&gt;      &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+      &lt;span class="n"&gt;password&lt;/span&gt; = &lt;span class="n"&gt;request&lt;/span&gt;.&lt;span class="n"&gt;get&lt;/span&gt;(&lt;span class="s"&gt;&amp;quot;password&amp;quot;&lt;/span&gt;)
+      &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nb"&gt;not&lt;/span&gt; &lt;span class="nb"&gt;re&lt;/span&gt;.&lt;span class="n"&gt;match&lt;/span&gt;(&lt;span class="n"&gt;RE_PASSWORD_FOMATTER&lt;/span&gt;):
+           &lt;span class="n"&gt;raise&lt;/span&gt; &lt;span class="n"&gt;InvalidPasswordException&lt;/span&gt;
+      &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;password&lt;/span&gt;
+
+  &lt;span class="n"&gt;def&lt;/span&gt; &lt;span class="n"&gt;test_handler&lt;/span&gt;(&lt;span class="n"&gt;request&lt;/span&gt;):
+      &lt;span class="n"&gt;try:&lt;/span&gt;
+          &lt;span class="n"&gt;mobile&lt;/span&gt; = &lt;span class="n"&gt;get_mobile&lt;/span&gt;()
+          &lt;span class="n"&gt;password&lt;/span&gt; = &lt;span class="n"&gt;get_mobile&lt;/span&gt;()
+      &lt;span class="n"&gt;except&lt;/span&gt; (&lt;span class="n"&gt;InvalidMoblieException&lt;/span&gt;, &lt;span class="n"&gt;InvalidPasswordException&lt;/span&gt;) &lt;span class="k"&gt;as&lt;/span&gt; &lt;span class="n"&gt;e:&lt;/span&gt;
+          &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nb"&gt;e&lt;/span&gt;.&lt;span class="n"&gt;status_code&lt;/span&gt;, &lt;span class="nb"&gt;e&lt;/span&gt;.&lt;span class="n"&gt;error_msg&lt;/span&gt;
+      &lt;span class="n"&gt;else:&lt;/span&gt;
+          &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;check_account&lt;/span&gt;(&lt;span class="n"&gt;mobile&lt;/span&gt;, &lt;span class="n"&gt;password&lt;/span&gt;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;前面的例子都是比较简单的。 当我们写复杂业务的时候， 如果能正确的运用好一场的话， 会有一种既省时又省力的感觉。 最常见的例子是我们要造一个&lt;code&gt;HTTP Server&lt;/code&gt;的轮子。 然后要处理很多的状态信息， 比如500、400、404等。 又或者是验证一些东西的时候 , 这时候用异常来简化代码是最好的选择了。  &lt;/p&gt;
+&lt;h3&gt;结束&lt;/h3&gt;
+&lt;p&gt;异常处理也就这么些内容， 当你&lt;code&gt;raise&lt;/code&gt;  一个异常的时候， 其实是隐形的传递一些信息， 告诉自己哪里出现问题了， 出现什么样子的问题。  你&lt;code&gt;raise&lt;/code&gt;一个exception的时候， 就要在调用该函数的地方做except动作。&lt;/p&gt;</content><category term="Python"></category><category term="代码优化"></category></entry><entry><title>重构——重新组织函数</title><link href="/zhong-gou-zhong-xin-zu-zhi-han-shu.html" rel="alternate"></link><published>2017-01-29T20:11:00+00:00</published><updated>2017-01-29T20:11:00+00:00</updated><author><name></name></author><id>tag:None,2017-01-29:/zhong-gou-zhong-xin-zu-zhi-han-shu.html</id><summary type="html">&lt;p&gt;大多数时候函数太过于冗长复杂， 或者是难以理解，我们要对函数进行整理。&lt;/p&gt;
+&lt;h4&gt;Extract Method (提炼函数)&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;将冗长函数中的一段代码独立出来到一个函数中， 并让函数名称解释函数用途。独立出来的函数是短而命名良好的函数（1. 函数粒度小， 则被复用的机会就更大。 2. 高层函数读起来就像一系列注释。函数覆写会更容易些。）。&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Example&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 重构前
+def print_text():
+    print(&amp;quot;### this is header ###&amp;quot;)
+    print(&amp;quot; this is body&amp;quot;)
+    print(&amp;quot;### this is footer ###&amp;quot;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 重构后
+def print_header():
+    print(&amp;quot;### this is header ###&amp;quot;)
+
+def print_body():
+    print(&amp;quot;this is body&amp;quot;)
+
+def print_footer():
+    print(&amp;quot;### this is footer …&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;p&gt;大多数时候函数太过于冗长复杂， 或者是难以理解，我们要对函数进行整理。&lt;/p&gt;
+&lt;h4&gt;Extract Method (提炼函数)&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;将冗长函数中的一段代码独立出来到一个函数中， 并让函数名称解释函数用途。独立出来的函数是短而命名良好的函数（1. 函数粒度小， 则被复用的机会就更大。 2. 高层函数读起来就像一系列注释。函数覆写会更容易些。）。&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Example&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 重构前
+def print_text():
+    print(&amp;quot;### this is header ###&amp;quot;)
+    print(&amp;quot; this is body&amp;quot;)
+    print(&amp;quot;### this is footer ###&amp;quot;)
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;# 重构后
+def print_header():
+    print(&amp;quot;### this is header ###&amp;quot;)
+
+def print_body():
+    print(&amp;quot;this is body&amp;quot;)
+
+def print_footer():
+    print(&amp;quot;### this is footer  ###&amp;quot;)
+
+def print_text():
+    print_header()
+    print_body()
+    print_footer()
+ ```
+
+##### Inline Method(内联函数)
+
+ `当一个函数内容与函数名称同样清楚易懂时， 在函数调用点插入函数本地， 然后移除该函数。或者当你手上有一群不合理的函数，你可以将他们都内联到一个大型函数中， 再提取中合理的小型函数。` 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h1&gt;重构前&lt;/h1&gt;
+&lt;p&gt;def more_than_five_late_deliveries(_number):
+   return _number &amp;gt; 5&lt;/p&gt;
+&lt;p&gt;def get_rating(_number):
+    return 2 if more_than_five_late_deliveries(_number)  else 1&lt;/p&gt;
+&lt;h1&gt;重构后&lt;/h1&gt;
+&lt;p&gt;def get_rating(_number):
+    return  2 if _number &amp;gt; 5  else 1&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;##### Inline Temp (内联临时变量)
+` 你有一个临时变量， 只被简单表带时赋值一次， 而它妨碍了其他的重构手。 将所有对该变量的引用动作， 替换为对它赋值的那个表达式自身。`
+
+Example
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;base_price = order.base_price()
+return base_price &amp;gt; 1000&lt;/p&gt;
+&lt;h1&gt;重构后&lt;/h1&gt;
+&lt;p&gt;return order.basse_price() &amp;gt; 1000&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;##### Repalce Temp with Query(以查询取代临时变量)
+
+`局部变量使得代码难以被提炼——因为临时变量只能在所属的函数内使用， 所以它会驱使你写更长的函数。 如果把临时变量替换为一个查询， 那么同一个类中的所有函数都会得到这份信息`
+
+  找出被赋值一次的临时变量， 将临时变量等号右边的部分提炼到一个函数中。 
+
+Example
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;class Counter:
+    def &lt;strong&gt;init&lt;/strong&gt;(self, quantity, item_price):
+        self.quantity = quantity
+        self.item_price = self.item_price&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def get_price(self):
+    base_price = self.quantity * self.item_price
+    discount_factor = 0
+    if base_price &amp;gt; 1000:
+        discount_factor = 0.95
+    else:
+        discount_factor = 0.98
+   return base_price * discount_factor
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h1&gt;重构后&lt;/h1&gt;
+&lt;p&gt;class Counter:
+    """将查询作为一个函数单独提炼出来， 同一个类的其他函数都可以用到这些信息 """
+    def &lt;strong&gt;init&lt;/strong&gt;(self, quantity, item_price):
+        self.quantity = quantity
+        self.item_price = self.item_price&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;@property
+def base_price(self):
+    return self.quantity * self.item_price
+
+@property
+def discount_factor(self):
+    if self.base_price &amp;gt; 1000:
+        return 0.95
+    return 0.98
+
+def get_price(self):
+   return self.base_price * self.discount_factor
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;##### Introduce Explain Variable(引入解释性变量)
+`将复杂表达式（或其中一部分）的结果放进一个临时变量， 此变量的名称来解释表达式用途。临时变量可以更好的帮助你理解表达式的意思`
+
+Example
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;if platform.upper().find("MAC") &amp;gt; -1 and browser.upper().find("IE") &amp;gt; -1 and resize &amp;gt; 0:
+    return True
+else:
+    return Fase&lt;/p&gt;
+&lt;h1&gt;重构后&lt;/h1&gt;
+&lt;p&gt;is_mac = platform.upper().find("MAC") &amp;gt; -1 
+is_ie_browsesr = browser.upper().find("IE") &amp;gt; -1
+was_resize = resize &amp;gt; 0&lt;/p&gt;
+&lt;p&gt;if is_mac and is_id_browser and was_resize:
+    return True
+else:
+    return False&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;##### Split Temporary Variable (分解临时变量)
+`临时变量应该只被赋值一次， 如果他们被赋值超过一次， 就意味着他们在函数中承担了一个以上的责任。 每个变量应该只被赋值一次， 针对每次赋值， 创造一个独立的， 对应的临时变量`
+
+##### Remove Assignments to Parameters(移除对参数的赋值)
+`对参数赋值，降低了代码的清晰度， 而且混用了按值传递和按引用传递这两种参数传递方式。 应该建立一个临时变量， 把待处理的参数赋值给它`
+
+Example
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;def get_value(input_value, quantity):
+    if input_value &amp;gt; 50:
+        input_value -= 2
+    return input_value * quantity&lt;/p&gt;
+&lt;h1&gt;重构后&lt;/h1&gt;
+&lt;p&gt;def get_value(input_value, quantity):
+    result = input_value
+    if result &amp;gt; 50:
+        result -= 2
+    return result * quantity &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;##### Replace Method with Method object (以函数对象取代函数)
+`如果有一个大函数， 对其中的变量无法使用Extract Method， 将这个函数放入一个单独的对象中， 如此以来局部变量就变成了对象中的字段。 然后你可以在同一个对象中将这个大型函数分解为多个小型函数`
+
+Example 
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;class Account：
+    def delta(self):
+        pass&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def gamma(self, input_val, quantity, year_to_date):
+    important_value1 = input_val * quantity + self.delta()
+    important_value2 = input_val * year_to_date + 100
+
+    if year_to_date - important_value1 &amp;gt; 100:
+        important_value2 -= 20
+
+    important_value3 = important_value2 * 7
+    return importantValue3 - 2 * importantValue1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h1&gt;重构后&lt;/h1&gt;
+&lt;p&gt;class Gamma:
+    """创建一个新类， 加入构造函数. 把原函数搬到compute()"""&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def __init__(self, account, input_val, quantity, year_to_date):
+    self.account = account 
+    self.input_val = input_val
+    self.quantity = self.quantity
+    self.year_to_date = self.year_to_date
+
+def compute(self):
+    &amp;quot;&amp;quot;&amp;quot;将原函数搬家移过来， 我们也可以对 compute 采取Extract Method. 不用打心传递参数的问题&amp;quot;&amp;quot;&amp;quot;
+    important_value1 = self.input_val * self.quantity + self.account.delta()
+    important_value2 = self.input_val * self.year_to_date + 100
+
+    if self.year_to_date - self.important_value1 &amp;gt; 100:
+        important_value2 -= 20
+
+    important_value3 = self.important_value2 * 7
+    return importantValue3 - 2 * importantValue1
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;class Account:
+    """修改原函数， 让它将它的工作委托给刚完成的这个函数对象"""
+    def delta(self):
+        pass&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;def gamma(self, input_val, quantity, year_to_date): 
+    return Gamma(self, input_val, quantity, year_to_date).compute()
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;p&gt;```&lt;/p&gt;
+&lt;h5&gt;Substitute Algorithm (替换算法)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;将函数本体替换为另一个算法&lt;/code&gt;&lt;/p&gt;</content><category term="Python"></category><category term="代码优化"></category></entry><entry><title>重构——在对象之间搬移特性</title><link href="/zhong-gou-zai-dui-xiang-zhi-jian-ban-yi-te-xing.html" rel="alternate"></link><published>2017-01-16T19:23:00+00:00</published><updated>2017-01-16T19:23:00+00:00</updated><author><name></name></author><id>tag:None,2017-01-16:/zhong-gou-zai-dui-xiang-zhi-jian-ban-yi-te-xing.html</id><summary type="html">&lt;h5&gt;Move Method(搬移函数)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;某个类中的函数与其他类有着更多的交流，在该函数最长引用的类中建立一个有着类似行为的心函数， 或者是将旧函数完全移除。一旦发现有可能搬移的函数， 观察调用它的那一端， 根据 函数与哪个对象交流的比较多决定其移动路径&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Example &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Account&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt;  &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;days_own_drawn&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;account_type&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_own_drawn&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;days_own_drawn&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;over_draft_charge&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;account_type&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;is_premium&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+            &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="mi"&gt;10&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_own_drawn&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;7&lt;/span&gt;:
+                &lt;span class="kt"&gt;result&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_over_drawn&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mf"&gt;0.85&lt;/span&gt;
+         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;bank_charge&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;4 …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h5&gt;Move Method(搬移函数)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;某个类中的函数与其他类有着更多的交流，在该函数最长引用的类中建立一个有着类似行为的心函数， 或者是将旧函数完全移除。一旦发现有可能搬移的函数， 观察调用它的那一端， 根据 函数与哪个对象交流的比较多决定其移动路径&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Example &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Account&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt;  &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;days_own_drawn&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;account_type&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_own_drawn&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;days_own_drawn&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;over_draft_charge&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;account_type&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;is_premium&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+            &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="mi"&gt;10&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_own_drawn&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;7&lt;/span&gt;:
+                &lt;span class="kt"&gt;result&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_over_drawn&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mf"&gt;0.85&lt;/span&gt;
+         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;bank_charge&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;4.5&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_over_drawn&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;0&lt;/span&gt;:
+            &lt;span class="kt"&gt;result&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;over_draft_charge&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+
+&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;每一种不同的账户都有不同的透支金额，&lt;/span&gt; &lt;span class="err"&gt;我们要将&lt;/span&gt; &lt;span class="nx"&gt;over_draft_charge&lt;/span&gt; &lt;span class="err"&gt;搬到&lt;/span&gt; &lt;span class="nx"&gt;AccountType&lt;/span&gt; &lt;span class="err"&gt;中去。&lt;/span&gt;
+
+&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;移动&lt;/span&gt; &lt;span class="nx"&gt;over_draft_charge&lt;/span&gt; &lt;span class="err"&gt;到&lt;/span&gt; &lt;span class="nx"&gt;AccountType中&lt;/span&gt;
+
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;AccountType&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;is_premiun&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;pass&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;over_draft_charge&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;account&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;is_premium&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+            &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="mi"&gt;10&lt;/span&gt;
+            &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_own_drawn&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;7&lt;/span&gt;:
+                &lt;span class="kt"&gt;result&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;account&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_over_drawn&lt;/span&gt; &lt;span class="o"&gt;-&lt;/span&gt; &lt;span class="mi"&gt;7&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="mf"&gt;0.85&lt;/span&gt;
+         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+
+
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Account&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+   &lt;span class="s2"&gt;&amp;quot;&amp;quot;&amp;quot;  去掉 Account 中的 over_draft_charge 函数， 在 bank_chage 函数中调用AccountType over_draft_charge&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class="nx"&gt;def&lt;/span&gt;  &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;days_own_drawn&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;account_type&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_own_drawn&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;days_own_drawn&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;bank_charge&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mf"&gt;4.5&lt;/span&gt;
+        &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;days_over_drawn&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;0&lt;/span&gt;:
+            &lt;span class="kt"&gt;result&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;account&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;over_draft_charge&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;Move Field(搬移字段)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;在程序中，被其所驻类之外的另一个类更多的用到。 在目标类新建一个字段， 修改源字段所有用户， 另它们改用新字段。&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Example &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Account&lt;/span&gt; :
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;interest_rate&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;account_type&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;interest_rate&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;interest_rate&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;interest_for_amount_days&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;amount&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;days&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;interest_rate&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="nx"&gt;amount&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="nx"&gt;days&lt;/span&gt; &lt;span class="o"&gt;/&lt;/span&gt; &lt;span class="mi"&gt;365&lt;/span&gt;
+
+&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;将&lt;/span&gt;&lt;span class="nx"&gt;interest_rate&lt;/span&gt; &lt;span class="err"&gt;搬移到&lt;/span&gt;&lt;span class="nx"&gt;AccountType中&lt;/span&gt;
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;AccountType&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;interest_rate&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;interest_rate&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;interest&lt;/span&gt;
+
+     &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_interest_rate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;interest_rate&lt;/span&gt;
+
+     &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;set_interest_rate&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;rate&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+         &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;interest_rate&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;rate&lt;/span&gt;
+
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Account&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;account_type&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;account_type&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;interest_for_amount_days&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;amount&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;days&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;type&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_interest_rate&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="nx"&gt;account&lt;/span&gt; &lt;span class="o"&gt;*&lt;/span&gt; &lt;span class="nx"&gt;days&lt;/span&gt;  &lt;span class="o"&gt;/&lt;/span&gt;   &lt;span class="mi"&gt;365&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;Extract Class (提炼类)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;如果某些数据和某些函数总是一起出现， 某些数据经常同时变化甚至彼此相依时， 就要将他们分离出去——新建一个新类， 将相关字字段和函数搬移到新类，并建立旧类访问新类的连接&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Example &lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Person&lt;/span&gt;:
+     &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;office_area_code&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;office_number&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt; 
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;office_area_code&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;office_area_code&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;office_number&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;office_number&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_telephone_numer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+         &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;office_area_code&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;office_number&lt;/span&gt;
+
+    &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;将电话号码分离到单独的一个类中&lt;/span&gt;
+    &lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;TelePhoneNumber&lt;/span&gt;:
+        &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;area_code&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="kt"&gt;number&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+            &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;area_code&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;code&lt;/span&gt; 
+            &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="kt"&gt;number&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="kt"&gt;number&lt;/span&gt; 
+
+        &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_telephone_number&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;area_code&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="kt"&gt;number&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;Person&lt;/span&gt;:
+        &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;telephone_number&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+            &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt; 
+            &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;telephone_number&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;telephone_number&lt;/span&gt;
+
+        &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_telephone_number&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+            &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;telephone_number&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_telephone_number&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;Inline Class(将类内联化)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;将类的所有特性搬到一个类中，然后移除原类， Inline 
+Class 刚好与Extract Class 相反&lt;/code&gt;&lt;/p&gt;
+&lt;h5&gt;Hide Delegate(隐藏委托关系)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;在服务器对象上放置一个简单的委托函数， 将委托关系隐藏起来， 从而去除这种依赖 。即便将来发生委托关系上的变化，变化也只限制在服务对象中不波及客户（只修改服务对象中的关系）&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Example&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Person&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;department&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;department&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;department&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_department&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;department&lt;/span&gt;
+
+ &lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Department&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;department_code&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;person&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;department&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;department&lt;/span&gt; 
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;person&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;person&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_manager&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+       &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;person&lt;/span&gt;
+
+&lt;span class="err"&gt;#&lt;/span&gt;  &lt;span class="o"&gt;&amp;gt;&amp;gt;&amp;gt;&lt;/span&gt; &lt;span class="nx"&gt;manager&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;person&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_department&lt;/span&gt;&lt;span class="p"&gt;().&lt;/span&gt;&lt;span class="nx"&gt;get_manager&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;    
+
+&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;通过部门知道默认的经理&lt;/span&gt; &lt;span class="err"&gt;这暴露了&lt;/span&gt;&lt;span class="nx"&gt;Department的工作原理&lt;/span&gt;&lt;span class="err"&gt;，&lt;/span&gt; &lt;span class="err"&gt;如果对客户隐藏&lt;/span&gt;&lt;span class="nx"&gt;Department&lt;/span&gt;&lt;span class="err"&gt;，&lt;/span&gt; &lt;span class="err"&gt;可以减少耦合。&lt;/span&gt; 
+
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Person&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+&lt;span class="s2"&gt;&amp;quot;&amp;quot;&amp;quot;我们在Person中建立一个简单的委托关系&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_manager&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="err"&gt;：&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;department&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_manager&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h4&gt;Remove Middle Man (移除中间人)&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;如果大量函数都隐藏依赖关系，为了简单明了我们可以取出一部分委托行为&lt;/code&gt;&lt;/p&gt;
+&lt;h4&gt;Introduce Foreign Method(引入外加函数)&lt;/h4&gt;
+&lt;p&gt;&lt;code&gt;为服务类增加一个函数， 但你无法修改这个类。需要在客户类中建立一个函数， 并以第一参数形式传入一个服务器实例。 当增加的函数过多数， 应该使用 Introduce Local Extension&lt;/code&gt;&lt;/p&gt;
+&lt;p&gt;Example&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="n"&gt;form&lt;/span&gt; &lt;span class="n"&gt;datetime&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;datetime&lt;/span&gt; &lt;span class="kn"&gt;import&lt;/span&gt; &lt;span class="nn"&gt;date&lt;/span&gt;
+&lt;span class="n"&gt;start&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="n"&gt;date&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;year&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;month&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;d&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;day&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="c1"&gt;# 重构后&lt;/span&gt;
+&lt;span class="k"&gt;def&lt;/span&gt; &lt;span class="nf"&gt;get_next_day&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;_day&lt;/span&gt;&lt;span class="p"&gt;):&lt;/span&gt;
+    &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="n"&gt;date&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="n"&gt;_day&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;year&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;_day&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;month&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="n"&gt;_day&lt;/span&gt;&lt;span class="o"&gt;.&lt;/span&gt;&lt;span class="n"&gt;day&lt;/span&gt; &lt;span class="o"&gt;+&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+&lt;span class="c1"&gt;# &amp;gt;&amp;gt;&amp;gt; start = get_next_day(_d)&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h3&gt;introduce Local Extension(引入本地扩展)&lt;/h3&gt;
+&lt;p&gt;&lt;code&gt;建立一个新类， 使它包含这些额外函数。让这个扩展品成为源类的子类或者包装类&lt;/code&gt;&lt;/p&gt;</content><category term="Python"></category><category term="代码优化"></category></entry><entry><title>重构——重新组织数据</title><link href="/zhong-gou-zhong-xin-zu-zhi-shu-ju.html" rel="alternate"></link><published>2017-01-15T17:20:00+00:00</published><updated>2017-01-15T17:20:00+00:00</updated><author><name></name></author><id>tag:None,2017-01-15:/zhong-gou-zhong-xin-zu-zhi-shu-ju.html</id><summary type="html">&lt;h5&gt;Self Encapsulate Field(自封装字段)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;直接访问一个字段，但与字段间的耦合性逐渐变得笨拙。为这个字段建立取值/设值函数， 并且只以这些函数访问字段。简介访问变量的好处是， 子类可以通过覆写一个函数而改变获取数据的途径 ；它还支持更灵活的管理方式，例如延迟初始化。直接访问变量的好处是可以使代码比较容易阅读&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;使用刚才的例子&lt;/span&gt;
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Range&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;high&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;low&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;high&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;high&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;low&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;low&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;includes&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;arg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;arg&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;low&lt;/span&gt; &lt;span class="nx"&gt;and&lt;/span&gt; &lt;span class="nx"&gt;arg&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;high&lt;/span&gt;
+
+&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;重构后&lt;/span&gt;
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Range&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;high&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;low&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;high&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;high …&lt;/span&gt;&lt;/pre&gt;&lt;/div&gt;</summary><content type="html">&lt;h5&gt;Self Encapsulate Field(自封装字段)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;直接访问一个字段，但与字段间的耦合性逐渐变得笨拙。为这个字段建立取值/设值函数， 并且只以这些函数访问字段。简介访问变量的好处是， 子类可以通过覆写一个函数而改变获取数据的途径 ；它还支持更灵活的管理方式，例如延迟初始化。直接访问变量的好处是可以使代码比较容易阅读&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;使用刚才的例子&lt;/span&gt;
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Range&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;high&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;low&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;high&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;high&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;low&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;low&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;includes&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;arg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;arg&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;low&lt;/span&gt; &lt;span class="nx"&gt;and&lt;/span&gt; &lt;span class="nx"&gt;arg&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;high&lt;/span&gt;
+
+&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;重构后&lt;/span&gt;
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Range&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;high&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;low&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;high&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;high&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;low&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;low&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_low&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;low&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_high&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;high&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;includes&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;arg&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;arg&lt;/span&gt; &lt;span class="o"&gt;&amp;gt;=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_low&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="nx"&gt;and&lt;/span&gt; &lt;span class="nx"&gt;arg&lt;/span&gt; &lt;span class="o"&gt;&amp;lt;=&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_high&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;Replace Data Value with Object (以对取代数据值)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;一个数据项需要跟其他数据项一起使用才有意义， 将数据项改变成对象&lt;/code&gt;&lt;/p&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;有一个订单&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;Order&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="err"&gt;，&lt;/span&gt; &lt;span class="err"&gt;我们用一个对象来表示顾客&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;Customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Order&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;set_customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt; 
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;number_of_orders_for&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;orders&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;order&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;orders&lt;/span&gt;:
+            &lt;span class="kt"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;order&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;:
+                &lt;span class="kt"&gt;result&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+
+&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;重构，&lt;/span&gt; &lt;span class="err"&gt;将&lt;/span&gt;&lt;span class="nx"&gt;Customer作为一个单独的对象提取出来&lt;/span&gt;
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Customer&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;set_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;
+
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Order&lt;/span&gt;:
+     &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;Customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_name&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;set_customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;set_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; 
+
+     &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_customer_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_name&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;number_of_orders_for&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;orders&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;order&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;orders&lt;/span&gt;:
+            &lt;span class="kt"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;order&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_customer_name&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;:
+                &lt;span class="kt"&gt;result&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;Change  Value to Reference (将值对象改为引用对象)&lt;/h5&gt;
+&lt;ul&gt;
+&lt;li&gt;引用对象： 将客户， 账户这类东西， 每个对象都代表真实世界中的一个实物，你可以等号操作检查两个对象是否相等。&lt;/li&gt;
+&lt;li&gt;值对象： 像时间，钱这类东西，它们完全由其所包含的数值数据来定义。&lt;/li&gt;
+&lt;/ul&gt;
+&lt;div class="highlight"&gt;&lt;pre&gt;&lt;span&gt;&lt;/span&gt;&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Customer&lt;/span&gt;:
+    &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;set_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;
+
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Order&lt;/span&gt;:
+     &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;Customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_name&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;set_customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;set_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt; 
+
+     &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_customer_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_name&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;number_of_orders_for&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;orders&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;order&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;orders&lt;/span&gt;:
+            &lt;span class="kt"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;order&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_customer_name&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;:
+                &lt;span class="kt"&gt;result&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+
+&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;此时&lt;/span&gt;&lt;span class="nx"&gt;Customer是一个值对象&lt;/span&gt;&lt;span class="err"&gt;，&lt;/span&gt; &lt;span class="err"&gt;就算多份订单属于同一个客户，&lt;/span&gt; &lt;span class="err"&gt;但每一个&lt;/span&gt;&lt;span class="nx"&gt;Order对象还是拥有各自的Customer&lt;/span&gt;
+&lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;使用&lt;/span&gt; &lt;span class="nx"&gt;Replace&lt;/span&gt; &lt;span class="nx"&gt;Constructor&lt;/span&gt; &lt;span class="kd"&gt;with&lt;/span&gt; &lt;span class="nx"&gt;Factory&lt;/span&gt; &lt;span class="nx"&gt;Method&lt;/span&gt; &lt;span class="err"&gt;控制对象的创建过程&lt;/span&gt;
+
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Customer&lt;/span&gt;:
+     &lt;span class="kt"&gt;instances&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;dict&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+     &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="err"&gt;通过一个注册表来保存所有的&lt;/span&gt;&lt;span class="nx"&gt;Customer对象&lt;/span&gt;&lt;span class="err"&gt;，&lt;/span&gt; &lt;span class="err"&gt;以此作为访问点&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;
+
+    &lt;span class="kd"&gt;@staticmethod&lt;/span&gt;
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;create&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+       &lt;span class="k"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;instance&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+           &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;instances&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="nx"&gt;customer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt;  &lt;span class="nx"&gt;Customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;store&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;store&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;instance&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;update&lt;/span&gt;&lt;span class="p"&gt;({&lt;/span&gt;&lt;span class="nx"&gt;self.name&lt;/span&gt;: &lt;span class="kt"&gt;self&lt;/span&gt;&lt;span class="p"&gt;})&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_instance_by_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;instances&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;set_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;name&lt;/span&gt;
+
+&lt;span class="kr"&gt;class&lt;/span&gt; &lt;span class="nx"&gt;Order&lt;/span&gt;:
+     &lt;span class="kt"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;__init__&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;Customer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;create&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;name&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+        &lt;span class="err"&gt;#&lt;/span&gt; &lt;span class="nx"&gt;Replace&lt;/span&gt; &lt;span class="nx"&gt;Constructor&lt;/span&gt; &lt;span class="kd"&gt;with&lt;/span&gt; &lt;span class="nx"&gt;Factory&lt;/span&gt; &lt;span class="nx"&gt;Method&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;set_customer&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;
+
+     &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;get_customer_name&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_name&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt;
+
+    &lt;span class="nx"&gt;def&lt;/span&gt; &lt;span class="nx"&gt;number_of_orders_for&lt;/span&gt;&lt;span class="p"&gt;(&lt;/span&gt;&lt;span class="nx"&gt;self&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;orders&lt;/span&gt;&lt;span class="p"&gt;,&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;&lt;span class="p"&gt;)&lt;/span&gt;&lt;span class="o"&gt;:&lt;/span&gt;
+        &lt;span class="s2"&gt;&amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+&lt;span class="s2"&gt;        : param customer:  Customer instance&lt;/span&gt;
+&lt;span class="s2"&gt;        : param orders:   Order instacnes&lt;/span&gt;
+&lt;span class="s2"&gt;        : type orders: list&lt;/span&gt;
+&lt;span class="s2"&gt;        : return : number of orders that belong to the customer&lt;/span&gt;
+&lt;span class="s2"&gt;        &amp;quot;&amp;quot;&amp;quot;&lt;/span&gt;
+        &lt;span class="nx"&gt;result&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="mi"&gt;0&lt;/span&gt;
+        &lt;span class="k"&gt;for&lt;/span&gt; &lt;span class="nx"&gt;order&lt;/span&gt; &lt;span class="k"&gt;in&lt;/span&gt; &lt;span class="nx"&gt;orders&lt;/span&gt;:
+            &lt;span class="kt"&gt;if&lt;/span&gt; &lt;span class="nx"&gt;order&lt;/span&gt;&lt;span class="p"&gt;.&lt;/span&gt;&lt;span class="nx"&gt;get_customer&lt;/span&gt;&lt;span class="p"&gt;()&lt;/span&gt; &lt;span class="o"&gt;=&lt;/span&gt; &lt;span class="nx"&gt;customer&lt;/span&gt;:
+                &lt;span class="kt"&gt;result&lt;/span&gt; &lt;span class="o"&gt;+=&lt;/span&gt; &lt;span class="mi"&gt;1&lt;/span&gt;
+        &lt;span class="k"&gt;return&lt;/span&gt; &lt;span class="nx"&gt;result&lt;/span&gt;
+&lt;/pre&gt;&lt;/div&gt;
+
+
+&lt;h5&gt;Change Reference to Value(将引用对象改为值对象)&lt;/h5&gt;
+&lt;p&gt;&lt;code&gt;你有一个对象， 很小且不可变，而且不易管理。 将它变成一个值对象&lt;/code&gt;&lt;/p&gt;
+&lt;h5&gt;Repalce Array whit Object (以对象取代数组)&lt;/h5&gt;</content><category term="Python"></category><category term="代码优化"></category></entry></feed>

@@ -15,7 +15,7 @@ Released   : 20100928
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>Progwong - Python</title>
+<title>Progwong - 代码优化</title>
 <link href="/theme/css/style.css" rel="stylesheet" type="text/css" media="screen" />
 <link href="/" type="application/atom+xml" rel="alternate" title="Progwong ATOM Feed" />
 </head>
@@ -324,100 +324,6 @@ def print_footer():
     <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">high</span><span class="p">,</span> <span class="nx">low</span><span class="p">)</span><span class="o">:</span>
         <span class="nx">self</span><span class="p">.</span><span class="nx">high</span> <span class="o">=</span> <span class="nx">high …</span></pre></div>	
 						 <a class="readmore" href="/zhong-gou-zhong-xin-zu-zhi-shu-ju.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/python-han-shu-chuan-can-wen-ti-xiao-ji.html">Python 函数传参问题小记</a></h2>
-						<p class="meta"><span class="date">Le 六 03 十二月 2016</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <p>Summary: ssssssss</p>
-<p>上次利用闭包的特性写一个计数器 ，代码是这样的：</p>
-<div class="highlight"><pre><span></span>def generate_counter():
-    CNT = 0
-    def add_one():
-        CNT = CNT  +  1
-        return CNT
-    return add_one
-
-counter = generate_counter()
-
-print(counter())
-print(counter())
-</pre></div>
-
-
-<p>输出：</p>
-<div class="highlight"><pre><span></span>----&gt; 1 print(counter())
-
-&lt;ipython-input-26-2a8ce1102950&gt; in add_one()
-      2         CNT = 0
-      3         def add_one():
-----&gt; 4                 CNT = CNT  +  1
-      5                 return CNT
-      6         return add_one
-
-UnboundLocalError: local variable &#39;CNT …</pre></div>	
-						 <a class="readmore" href="/python-han-shu-chuan-can-wen-ti-xiao-ji.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/pythonpa-chong-mo-ni-deng-lu-de-hei-mo-fa.html">Python爬虫模拟登录的黑魔法</a></h2>
-						<p class="meta"><span class="date">Le 三 19 十月 2016</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <p>今天用 requests + BeautifulSoup 抓取 aliexpress 的时候， 在模拟登录时候出现了很多问题， 提交数据时会对密码等一些字段加密， 而且提交一大堆不知名的字段， 大概有二十多项。 看到那么多字段， 整个人就不好了， 作为一个懒人， 准备绕过这个坑。</p>
-<p><strong>大概思路是这样， 通过 selenium 打开浏览器， 模拟登录。 获取cookies ，并将cookies以文件的形式保存到本地。 当我们使用requests打开页面的时候就可以用本地的cookies。        因为 通过selenium打开浏览器的方式登陆没有那么多限制， 只需要模拟登录流程（ 输入帐号密码， 点击登录即可登陆）。 而且selenium可以模拟各种浏览器， 亦可以在命令行下实现浏览器功能。</strong></p>
-<h4>1: 通过selenium 登录</h4>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">selenium</span> <span class="kn">import</span> <span class="n">webdriver</span>
-<span class="kn">from</span> <span class="nn">selenium.webdriver.common.keys</span> <span class="kn">import</span> <span class="n">Keys</span>
-
-<span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span> <span class="n">browser</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="n">browser …</span></pre></div>	
-						 <a class="readmore" href="/pythonpa-chong-mo-ni-deng-lu-de-hei-mo-fa.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/leetcode-shu-ju-jie-gou-shu.html">leetcode-数据结构-树</a></h2>
-						<p class="meta"><span class="date">Le 六 09 七月 2016</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <h3>94. Binary Tree Inorder Traversal</h3>
-<p><strong>Question</strong>
-Editorial Solution
-Given a binary tree, return the <em>inorder</em> traversal of its nodes' values.
-For example:Given binary tree [1,null,2,3]
-<code>1
-    \
-     2
-    /
-   3</code>
-return [1,3,2]</p>
-<p><strong>Note:</strong> Recursive solution is trivial, could you do it iteratively?</p>
-<p><a href="https://leetcode.com/subscribe/">Subscribe</a> to see which …</p>	
-						 <a class="readmore" href="/leetcode-shu-ju-jie-gou-shu.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/leetcode-shu-ju-jie-gou-xian-xing-biao.html">leetcode-数据结构-线性表</a></h2>
-						<p class="meta"><span class="date">Le 六 09 七月 2016</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <h4>19 . Remove Nth Node From End of List</h4>
-<p><code>Given a linked list, remove the *n*th
- node from the end of list and return its head.</code>
-<strong> For example, </strong></p>
-<blockquote>
-<p>Given linked list: <strong>1-&gt;2-&gt;3-&gt;4-&gt;5</strong>, and <strong><em>n</em> = 2</strong>. After removing the second node from the end, the linked list …</p></blockquote>	
-						 <a class="readmore" href="/leetcode-shu-ju-jie-gou-xian-xing-biao.html">Lire la suite …</a>
 						</div>
 					</div>
 					<div style="clear: both;">&nbsp;</div>

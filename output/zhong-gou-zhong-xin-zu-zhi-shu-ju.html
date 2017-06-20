@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>重构——重新组织数据</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li class="active"><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
+                    <li><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
+                    <li><a href="/category/python.html">Python</a></li>
+                    <li><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/zhong-gou-zhong-xin-zu-zhi-shu-ju.html" rel="bookmark"
+           title="Permalink to 重构——重新组织数据">重构——重新组织数据</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2017-01-15T17:20:00+00:00">
+                Published: 日 15 一月 2017
+        </abbr>
+
+<p>In <a href="/category/dai-ma-you-hua.html">代码优化</a>.</p>
+<p>tags: <a href="/tag/python.html">Python</a> <a href="/tag/dai-ma-you-hua.html">代码优化</a> </p>
+</footer><!-- /.post-info -->      <h5>Self Encapsulate Field(自封装字段)</h5>
+<p><code>直接访问一个字段，但与字段间的耦合性逐渐变得笨拙。为这个字段建立取值/设值函数， 并且只以这些函数访问字段。简介访问变量的好处是， 子类可以通过覆写一个函数而改变获取数据的途径 ；它还支持更灵活的管理方式，例如延迟初始化。直接访问变量的好处是可以使代码比较容易阅读</code></p>
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="err">使用刚才的例子</span>
+<span class="kr">class</span> <span class="nx">Range</span>:
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">high</span><span class="p">,</span> <span class="nx">low</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">high</span> <span class="o">=</span> <span class="nx">high</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">low</span> <span class="o">=</span> <span class="nx">low</span>
+
+    <span class="nx">def</span> <span class="nx">includes</span><span class="p">(</span><span class="nx">arg</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">arg</span> <span class="o">&gt;=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">low</span> <span class="nx">and</span> <span class="nx">arg</span> <span class="o">&lt;=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">high</span>
+
+<span class="err">#</span> <span class="err">重构后</span>
+<span class="kr">class</span> <span class="nx">Range</span>:
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">high</span><span class="p">,</span> <span class="nx">low</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">high</span> <span class="o">=</span> <span class="nx">high</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">low</span> <span class="o">=</span> <span class="nx">low</span>
+
+    <span class="nx">def</span> <span class="nx">get_low</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">low</span>
+
+    <span class="nx">def</span> <span class="nx">get_high</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">high</span>
+
+    <span class="nx">def</span> <span class="nx">includes</span><span class="p">(</span><span class="nx">arg</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">arg</span> <span class="o">&gt;=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_low</span><span class="p">()</span> <span class="nx">and</span> <span class="nx">arg</span> <span class="o">&lt;=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">get_high</span><span class="p">()</span>
+</pre></div>
+
+
+<h5>Replace Data Value with Object (以对取代数据值)</h5>
+<p><code>一个数据项需要跟其他数据项一起使用才有意义， 将数据项改变成对象</code></p>
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="err">有一个订单</span><span class="p">(</span><span class="nx">Order</span><span class="p">)</span><span class="err">，</span> <span class="err">我们用一个对象来表示顾客</span><span class="p">(</span><span class="nx">Customer</span><span class="p">)</span>
+
+<span class="kr">class</span> <span class="nx">Order</span>:
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span> <span class="o">=</span> <span class="nx">customer</span>
+
+    <span class="nx">def</span> <span class="nx">get_customer</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span>
+
+    <span class="nx">def</span> <span class="nx">set_customer</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span> <span class="o">=</span> <span class="nx">customer</span> 
+
+    <span class="nx">def</span> <span class="nx">number_of_orders_for</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">orders</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="nx">order</span> <span class="k">in</span> <span class="nx">orders</span>:
+            <span class="kt">if</span> <span class="nx">order</span><span class="p">.</span><span class="nx">customer</span> <span class="o">=</span> <span class="nx">customer</span>:
+                <span class="kt">result</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nx">result</span>
+
+<span class="err">#</span> <span class="err">重构，</span> <span class="err">将</span><span class="nx">Customer作为一个单独的对象提取出来</span>
+<span class="kr">class</span> <span class="nx">Customer</span>:
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+
+    <span class="nx">def</span> <span class="nx">get_name</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">name</span>
+
+    <span class="nx">def</span> <span class="nx">set_name</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+
+<span class="kr">class</span> <span class="nx">Order</span>:
+     <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span> <span class="o">=</span> <span class="nx">Customer</span><span class="p">(</span><span class="nx">customer</span><span class="p">)</span>
+
+    <span class="nx">def</span> <span class="nx">get_customer</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span><span class="p">.</span><span class="nx">get_name</span><span class="p">()</span>
+
+    <span class="nx">def</span> <span class="nx">set_customer</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span><span class="p">.</span><span class="nx">set_name</span><span class="p">(</span><span class="nx">customer</span><span class="p">)</span> 
+
+     <span class="nx">def</span> <span class="nx">get_customer_name</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span><span class="p">.</span><span class="nx">get_name</span><span class="p">()</span>
+
+    <span class="nx">def</span> <span class="nx">number_of_orders_for</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">orders</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="nx">order</span> <span class="k">in</span> <span class="nx">orders</span>:
+            <span class="kt">if</span> <span class="nx">order</span><span class="p">.</span><span class="nx">get_customer_name</span><span class="p">()</span> <span class="o">=</span> <span class="nx">customer</span>:
+                <span class="kt">result</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nx">result</span>
+</pre></div>
+
+
+<h5>Change  Value to Reference (将值对象改为引用对象)</h5>
+<ul>
+<li>引用对象： 将客户， 账户这类东西， 每个对象都代表真实世界中的一个实物，你可以等号操作检查两个对象是否相等。</li>
+<li>值对象： 像时间，钱这类东西，它们完全由其所包含的数值数据来定义。</li>
+</ul>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Customer</span>:
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+
+    <span class="nx">def</span> <span class="nx">get_name</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">name</span>
+
+    <span class="nx">def</span> <span class="nx">set_name</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+
+<span class="kr">class</span> <span class="nx">Order</span>:
+     <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span> <span class="o">=</span> <span class="nx">Customer</span><span class="p">(</span><span class="nx">customer</span><span class="p">)</span>
+
+    <span class="nx">def</span> <span class="nx">get_customer</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span><span class="p">.</span><span class="nx">get_name</span><span class="p">()</span>
+
+    <span class="nx">def</span> <span class="nx">set_customer</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span><span class="p">.</span><span class="nx">set_name</span><span class="p">(</span><span class="nx">customer</span><span class="p">)</span> 
+
+     <span class="nx">def</span> <span class="nx">get_customer_name</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span><span class="p">.</span><span class="nx">get_name</span><span class="p">()</span>
+
+    <span class="nx">def</span> <span class="nx">number_of_orders_for</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">orders</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="nx">order</span> <span class="k">in</span> <span class="nx">orders</span>:
+            <span class="kt">if</span> <span class="nx">order</span><span class="p">.</span><span class="nx">get_customer_name</span><span class="p">()</span> <span class="o">=</span> <span class="nx">customer</span>:
+                <span class="kt">result</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nx">result</span>
+
+<span class="err">#</span> <span class="err">此时</span><span class="nx">Customer是一个值对象</span><span class="err">，</span> <span class="err">就算多份订单属于同一个客户，</span> <span class="err">但每一个</span><span class="nx">Order对象还是拥有各自的Customer</span>
+<span class="err">#</span> <span class="err">使用</span> <span class="nx">Replace</span> <span class="nx">Constructor</span> <span class="kd">with</span> <span class="nx">Factory</span> <span class="nx">Method</span> <span class="err">控制对象的创建过程</span>
+
+<span class="kr">class</span> <span class="nx">Customer</span>:
+     <span class="kt">instances</span> <span class="o">=</span> <span class="nx">dict</span><span class="p">()</span>
+     <span class="err">#</span> <span class="err">通过一个注册表来保存所有的</span><span class="nx">Customer对象</span><span class="err">，</span> <span class="err">以此作为访问点</span>
+
+    <span class="nx">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+
+    <span class="kd">@staticmethod</span>
+    <span class="nx">def</span> <span class="nx">create</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span><span class="o">:</span>
+       <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span><span class="o">:</span>
+           <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instances</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span>
+        <span class="nx">customer</span> <span class="o">=</span>  <span class="nx">Customer</span><span class="p">(</span><span class="nx">customer</span><span class="p">)</span>
+        <span class="nx">customer</span><span class="p">.</span><span class="nx">store</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nx">customer</span>
+
+    <span class="nx">def</span> <span class="nx">store</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">instance</span><span class="p">.</span><span class="nx">update</span><span class="p">({</span><span class="nx">self.name</span>: <span class="kt">self</span><span class="p">})</span>
+
+    <span class="nx">def</span> <span class="nx">get_name</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">name</span>
+
+    <span class="nx">def</span> <span class="nx">get_instance_by_name</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">instances</span><span class="p">.</span><span class="nx">get</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span>
+
+    <span class="nx">def</span> <span class="nx">set_name</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">name</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span>
+
+<span class="kr">class</span> <span class="nx">Order</span>:
+     <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span> <span class="o">=</span> <span class="nx">Customer</span><span class="p">.</span><span class="nx">create</span><span class="p">(</span><span class="nx">name</span><span class="p">)</span>
+        <span class="err">#</span> <span class="nx">Replace</span> <span class="nx">Constructor</span> <span class="kd">with</span> <span class="nx">Factory</span> <span class="nx">Method</span>
+
+    <span class="nx">def</span> <span class="nx">get_customer</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span>
+
+    <span class="nx">def</span> <span class="nx">set_customer</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span> <span class="o">=</span> <span class="nx">customer</span><span class="p">)</span>
+
+     <span class="nx">def</span> <span class="nx">get_customer_name</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">customer</span><span class="p">.</span><span class="nx">get_name</span><span class="p">()</span>
+
+    <span class="nx">def</span> <span class="nx">number_of_orders_for</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">orders</span><span class="p">,</span> <span class="nx">customer</span><span class="p">)</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        : param customer:  Customer instance</span>
+<span class="s2">        : param orders:   Order instacnes</span>
+<span class="s2">        : type orders: list</span>
+<span class="s2">        : return : number of orders that belong to the customer</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">for</span> <span class="nx">order</span> <span class="k">in</span> <span class="nx">orders</span>:
+            <span class="kt">if</span> <span class="nx">order</span><span class="p">.</span><span class="nx">get_customer</span><span class="p">()</span> <span class="o">=</span> <span class="nx">customer</span>:
+                <span class="kt">result</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="nx">result</span>
+</pre></div>
+
+
+<h5>Change Reference to Value(将引用对象改为值对象)</h5>
+<p><code>你有一个对象， 很小且不可变，而且不易管理。 将它变成一个值对象</code></p>
+<h5>Repalce Array whit Object (以对象取代数组)</h5>
+    </div><!-- /.entry-content -->
+
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

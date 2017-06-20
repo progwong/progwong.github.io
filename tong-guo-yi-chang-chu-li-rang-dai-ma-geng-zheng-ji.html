@@ -15,7 +15,7 @@ Released   : 20100928
 <meta name="keywords" content="" />
 <meta name="description" content="" />
 <meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>Progwong - Python</title>
+<title>通过异常处理让代码更整洁</title>
 <link href="/theme/css/style.css" rel="stylesheet" type="text/css" media="screen" />
 <link href="/" type="application/atom+xml" rel="alternate" title="Progwong ATOM Feed" />
 </head>
@@ -24,15 +24,14 @@ Released   : 20100928
 	<div id="page">
 		<div id="page-bgtop">
 			<div id="page-bgbtm">
- 
-        
-				<div id="content">
+    
+                        	<div id="content">
 					<div class="post">
-						<h2 class="title"><a href="/tong-guo-yi-chang-chu-li-rang-dai-ma-geng-zheng-ji.html">通过异常处理让代码更整洁</a></h2>
-						<p class="meta"><span class="date">Le  </span><span class="posted">Par <a href="#">Progwong</a></span><span>&nbsp; | Catégorie : <a href="/category/dai-ma-you-hua.html">代码优化</a></span></p>
+						<h2 class="title"><a href="tong-guo-yi-chang-chu-li-rang-dai-ma-geng-zheng-ji.html">通过异常处理让代码更整洁</a></h2>
+						<p class="meta"><span class="date">Le 二 23 五月 2017 </span><span class="posted">Par <a href="#">Progwong</a></span><span>&nbsp; | Catégorie : <a href="/category/dai-ma-you-hua.html">代码优化</a></span></p>
 					<p class="meta">Tags : <span><a href="/tag/python.html">Python</a> / </span>
 <span><a href="/tag/dai-ma-you-hua.html">代码优化</a> / </span>
-</p>
+</p>	
 						<div style="clear: both;">&nbsp;</div>
 						<div class="entry">
 						 <p><strong>前言</strong></p>
@@ -239,189 +238,10 @@ Released   : 20100928
 <p>异常处理也就这么些内容， 当你<code>raise</code>  一个异常的时候， 其实是隐形的传递一些信息， 告诉自己哪里出现问题了， 出现什么样子的问题。  你<code>raise</code>一个exception的时候， 就要在调用该函数的地方做except动作。</p>	
 						</div>
 					</div>
-	
-			                <div class="post">
-			                        <h2 class="title">Autres articles</h2>
-			                </div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/zhong-gou-zhong-xin-zu-zhi-han-shu.html">重构——重新组织函数</a></h2>
-						<p class="meta"><span class="date">Le 日 29 一月 2017</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <p>大多数时候函数太过于冗长复杂， 或者是难以理解，我们要对函数进行整理。</p>
-<h4>Extract Method (提炼函数)</h4>
-<p><code>将冗长函数中的一段代码独立出来到一个函数中， 并让函数名称解释函数用途。独立出来的函数是短而命名良好的函数（1. 函数粒度小， 则被复用的机会就更大。 2. 高层函数读起来就像一系列注释。函数覆写会更容易些。）。</code></p>
-<p>Example</p>
-<div class="highlight"><pre><span></span># 重构前
-def print_text():
-    print(&quot;### this is header ###&quot;)
-    print(&quot; this is body&quot;)
-    print(&quot;### this is footer ###&quot;)
-</pre></div>
-
-
-<div class="highlight"><pre><span></span># 重构后
-def print_header():
-    print(&quot;### this is header ###&quot;)
-
-def print_body():
-    print(&quot;this is body&quot;)
-
-def print_footer():
-    print(&quot;### this is footer …</pre></div>	
-						 <a class="readmore" href="/zhong-gou-zhong-xin-zu-zhi-han-shu.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/zhong-gou-zai-dui-xiang-zhi-jian-ban-yi-te-xing.html">重构——在对象之间搬移特性</a></h2>
-						<p class="meta"><span class="date">Le 一 16 一月 2017</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <h5>Move Method(搬移函数)</h5>
-<p><code>某个类中的函数与其他类有着更多的交流，在该函数最长引用的类中建立一个有着类似行为的心函数， 或者是将旧函数完全移除。一旦发现有可能搬移的函数， 观察调用它的那一端， 根据 函数与哪个对象交流的比较多决定其移动路径</code></p>
-<p>Example </p>
-<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Account</span>:
-    <span class="kt">def</span>  <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">account_type</span><span class="p">,</span> <span class="nx">days_own_drawn</span><span class="p">)</span><span class="o">:</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">account_type</span> <span class="o">=</span> <span class="nx">account_type</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">days_own_drawn</span> <span class="o">=</span> <span class="nx">days_own_drawn</span>
-
-    <span class="nx">def</span> <span class="nx">over_draft_charge</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
-        <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">account_type</span><span class="p">.</span><span class="nx">is_premium</span><span class="p">()</span><span class="o">:</span>
-            <span class="nx">result</span> <span class="o">=</span>  <span class="mi">10</span>
-            <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">days_own_drawn</span> <span class="o">&gt;</span> <span class="nx">7</span>:
-                <span class="kt">result</span> <span class="o">+=</span> <span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">days_over_drawn</span> <span class="o">-</span> <span class="mi">7</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.85</span>
-         <span class="k">return</span> <span class="nx">result</span>
-
-    <span class="nx">def</span> <span class="nx">bank_charge</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
-        <span class="nx">result</span> <span class="o">=</span> <span class="mf">4 …</span></pre></div>	
-						 <a class="readmore" href="/zhong-gou-zai-dui-xiang-zhi-jian-ban-yi-te-xing.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/zhong-gou-zhong-xin-zu-zhi-shu-ju.html">重构——重新组织数据</a></h2>
-						<p class="meta"><span class="date">Le 日 15 一月 2017</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <h5>Self Encapsulate Field(自封装字段)</h5>
-<p><code>直接访问一个字段，但与字段间的耦合性逐渐变得笨拙。为这个字段建立取值/设值函数， 并且只以这些函数访问字段。简介访问变量的好处是， 子类可以通过覆写一个函数而改变获取数据的途径 ；它还支持更灵活的管理方式，例如延迟初始化。直接访问变量的好处是可以使代码比较容易阅读</code></p>
-<div class="highlight"><pre><span></span><span class="err">#</span> <span class="err">使用刚才的例子</span>
-<span class="kr">class</span> <span class="nx">Range</span>:
-    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">high</span><span class="p">,</span> <span class="nx">low</span><span class="p">)</span><span class="o">:</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">high</span> <span class="o">=</span> <span class="nx">high</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">low</span> <span class="o">=</span> <span class="nx">low</span>
-
-    <span class="nx">def</span> <span class="nx">includes</span><span class="p">(</span><span class="nx">arg</span><span class="p">)</span><span class="o">:</span>
-        <span class="k">return</span> <span class="nx">arg</span> <span class="o">&gt;=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">low</span> <span class="nx">and</span> <span class="nx">arg</span> <span class="o">&lt;=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">high</span>
-
-<span class="err">#</span> <span class="err">重构后</span>
-<span class="kr">class</span> <span class="nx">Range</span>:
-    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">high</span><span class="p">,</span> <span class="nx">low</span><span class="p">)</span><span class="o">:</span>
-        <span class="nx">self</span><span class="p">.</span><span class="nx">high</span> <span class="o">=</span> <span class="nx">high …</span></pre></div>	
-						 <a class="readmore" href="/zhong-gou-zhong-xin-zu-zhi-shu-ju.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/python-han-shu-chuan-can-wen-ti-xiao-ji.html">Python 函数传参问题小记</a></h2>
-						<p class="meta"><span class="date">Le 六 03 十二月 2016</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <p>Summary: ssssssss</p>
-<p>上次利用闭包的特性写一个计数器 ，代码是这样的：</p>
-<div class="highlight"><pre><span></span>def generate_counter():
-    CNT = 0
-    def add_one():
-        CNT = CNT  +  1
-        return CNT
-    return add_one
-
-counter = generate_counter()
-
-print(counter())
-print(counter())
-</pre></div>
-
-
-<p>输出：</p>
-<div class="highlight"><pre><span></span>----&gt; 1 print(counter())
-
-&lt;ipython-input-26-2a8ce1102950&gt; in add_one()
-      2         CNT = 0
-      3         def add_one():
-----&gt; 4                 CNT = CNT  +  1
-      5                 return CNT
-      6         return add_one
-
-UnboundLocalError: local variable &#39;CNT …</pre></div>	
-						 <a class="readmore" href="/python-han-shu-chuan-can-wen-ti-xiao-ji.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/pythonpa-chong-mo-ni-deng-lu-de-hei-mo-fa.html">Python爬虫模拟登录的黑魔法</a></h2>
-						<p class="meta"><span class="date">Le 三 19 十月 2016</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <p>今天用 requests + BeautifulSoup 抓取 aliexpress 的时候， 在模拟登录时候出现了很多问题， 提交数据时会对密码等一些字段加密， 而且提交一大堆不知名的字段， 大概有二十多项。 看到那么多字段， 整个人就不好了， 作为一个懒人， 准备绕过这个坑。</p>
-<p><strong>大概思路是这样， 通过 selenium 打开浏览器， 模拟登录。 获取cookies ，并将cookies以文件的形式保存到本地。 当我们使用requests打开页面的时候就可以用本地的cookies。        因为 通过selenium打开浏览器的方式登陆没有那么多限制， 只需要模拟登录流程（ 输入帐号密码， 点击登录即可登陆）。 而且selenium可以模拟各种浏览器， 亦可以在命令行下实现浏览器功能。</strong></p>
-<h4>1: 通过selenium 登录</h4>
-<div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">selenium</span> <span class="kn">import</span> <span class="n">webdriver</span>
-<span class="kn">from</span> <span class="nn">selenium.webdriver.common.keys</span> <span class="kn">import</span> <span class="n">Keys</span>
-
-<span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span> <span class="n">browser</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="n">browser …</span></pre></div>	
-						 <a class="readmore" href="/pythonpa-chong-mo-ni-deng-lu-de-hei-mo-fa.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/leetcode-shu-ju-jie-gou-shu.html">leetcode-数据结构-树</a></h2>
-						<p class="meta"><span class="date">Le 六 09 七月 2016</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <h3>94. Binary Tree Inorder Traversal</h3>
-<p><strong>Question</strong>
-Editorial Solution
-Given a binary tree, return the <em>inorder</em> traversal of its nodes' values.
-For example:Given binary tree [1,null,2,3]
-<code>1
-    \
-     2
-    /
-   3</code>
-return [1,3,2]</p>
-<p><strong>Note:</strong> Recursive solution is trivial, could you do it iteratively?</p>
-<p><a href="https://leetcode.com/subscribe/">Subscribe</a> to see which …</p>	
-						 <a class="readmore" href="/leetcode-shu-ju-jie-gou-shu.html">Lire la suite …</a>
-						</div>
-					</div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/leetcode-shu-ju-jie-gou-xian-xing-biao.html">leetcode-数据结构-线性表</a></h2>
-						<p class="meta"><span class="date">Le 六 09 七月 2016</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <h4>19 . Remove Nth Node From End of List</h4>
-<p><code>Given a linked list, remove the *n*th
- node from the end of list and return its head.</code>
-<strong> For example, </strong></p>
-<blockquote>
-<p>Given linked list: <strong>1-&gt;2-&gt;3-&gt;4-&gt;5</strong>, and <strong><em>n</em> = 2</strong>. After removing the second node from the end, the linked list …</p></blockquote>	
-						 <a class="readmore" href="/leetcode-shu-ju-jie-gou-xian-xing-biao.html">Lire la suite …</a>
-						</div>
-					</div>
+			      
 					<div style="clear: both;">&nbsp;</div>
 				</div>
+				<!-- end #content -->
 				<div id="sidebar">
 					<div id="logo">
 						<h1><a href="">Progwong</a></h1>
@@ -436,7 +256,7 @@ return [1,3,2]</p>
 						<li>
 							<h2>Catégories</h2>
 							<ul>
-								 <li ><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
+								 <li class="active"><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
 								 <li ><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
 								 <li ><a href="/category/python.html">Python</a></li>
 								 <li ><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>

@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+        <meta charset="utf-8" />
+        <title>A Pelican Blog - 数据结构</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
+</head>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
+                    <li><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
+                    <li><a href="/category/python.html">Python</a></li>
+                    <li class="active"><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="/leetcode-shu-ju-jie-gou-shu.html">leetcode-数据结构-树</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2016-07-09T10:20:00+00:00">
+                Published: 六 09 七月 2016
+        </abbr>
+
+<p>In <a href="/category/shu-ju-jie-gou.html">数据结构</a>.</p>
+<p>tags: <a href="/tag/python.html">Python</a> <a href="/tag/shu-ju-jie-gou.html">数据结构</a> </p>
+</footer><!-- /.post-info --><h3>94. Binary Tree Inorder Traversal</h3>
+<p><strong>Question</strong>
+Editorial Solution
+Given a binary tree, return the <em>inorder</em> traversal of its nodes' values.
+For example:Given binary tree [1,null,2,3]
+<code>1
+    \
+     2
+    /
+   3</code>
+return [1,3,2]</p>
+<p><strong>Note:</strong> Recursive solution is trivial, could you do it iteratively?</p>
+<p><a href="https://leetcode.com/subscribe/">Subscribe</a> to see which companies asked this question</p>
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="err">栈</span>
+<span class="kr">class</span> <span class="nx">Solution</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">def</span> <span class="nx">inorderTraversal</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">)</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        :type root: TreeNode</span>
+<span class="s2">        :rtype: List[int]</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nx">not</span> <span class="nx">root</span>:
+            <span class="kt">return</span> <span class="p">[]</span>
+        <span class="nx">stack</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="nx">node</span> <span class="o">=</span> <span class="nx">root</span>
+        <span class="k">while</span> <span class="nx">stack</span> <span class="nx">or</span> <span class="nx">node</span>:
+            <span class="kt">if</span> <span class="nx">node</span>:
+                <span class="kt">stack.append</span><span class="p">(</span><span class="nx">node</span><span class="p">)</span>
+                <span class="nx">node</span> <span class="o">=</span> <span class="nx">node</span><span class="p">.</span><span class="nx">left</span>
+            <span class="k">else</span><span class="o">:</span>
+                <span class="nx">node</span> <span class="o">=</span> <span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
+                <span class="nx">result</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">node</span><span class="p">.</span><span class="nx">val</span><span class="p">)</span>
+                <span class="nx">node</span> <span class="o">=</span> <span class="nx">node</span><span class="p">.</span><span class="nx">right</span>
+        <span class="k">return</span> <span class="nx">result</span>
+
+<span class="err">#</span> <span class="err">递归</span>
+<span class="kr">class</span> <span class="nx">Solution</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">def</span> <span class="nx">inorderTraversal</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">,</span> <span class="nx">result</span><span class="o">=</span><span class="p">[])</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        :type root: TreeNode</span>
+<span class="s2">        :rtype: List[int]</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nx">not</span> <span class="nx">root</span>:
+            <span class="kt">return</span>  <span class="p">[]</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">inorderTraversal</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">left</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span>
+        <span class="nx">result</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">val</span><span class="p">)</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">inorderTraversal</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">right</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">result</span>
+</pre></div>
+
+
+<h3>102. Binary Tree Level Order Traversal</h3>
+<p>Given a binary tree, return the <em>level order</em> traversal of its nodes' values. (ie, from left to right, level by level).
+For example:Given binary tree [3,9,20,null,null,15,7]
+<code>3
+   / \
+  9  20
+    /  \
+   15   7</code>
+return its level order traversal as:
+[ [3], [9,20], [15,7]]</p>
+<p><a href="https://leetcode.com/subscribe/">Subscribe</a> to see which companies asked this question</p>
+<div class="highlight"><pre><span></span><span class="c1"># Definition for a binary tree node.</span>
+<span class="c1"># class TreeNode(object):</span>
+<span class="c1">#     def __init__(self, x):</span>
+<span class="c1">#         self.val = x</span>
+<span class="c1">#         self.left = None</span>
+<span class="c1">#         self.right = None</span>
+
+<span class="k">class</span> <span class="nc">Solution</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">levelOrder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :type root: TreeNode</span>
+<span class="sd">        :rtype: List[List[int]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+
+        <span class="kn">from</span> <span class="nn">Queue</span> <span class="kn">import</span> <span class="n">Queue</span>
+
+        <span class="n">q_root</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="n">q_son</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">son</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">node</span> <span class="o">=</span> <span class="n">root</span>
+        <span class="n">q_root</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">q_root</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">q_root</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+            <span class="n">son</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">val</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">:</span> <span class="n">q_son</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">left</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">:</span> <span class="n">q_son</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">node</span><span class="o">.</span><span class="n">right</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">q_root</span><span class="o">.</span><span class="n">empty</span><span class="p">():</span>
+                <span class="n">q_root</span> <span class="o">=</span> <span class="n">q_son</span>
+                <span class="n">q_son</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">son</span><span class="p">)</span>
+                <span class="n">son</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">return</span> <span class="n">result</span>
+
+<span class="c1"># 通过双队列解决， 应该有更好的方法， 如果题目要求输出一个list是比较容易的， 但是要把每一层放在单独的list中就稍微麻烦一点。        </span>
+
+<span class="c1"># 简单方法</span>
+
+<span class="k">class</span> <span class="nc">Solution</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">levelOrder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">_level</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="n">level</span><span class="p">,</span> <span class="n">dict_levels</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">root</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">return</span>
+            <span class="n">dict_levels</span><span class="p">[</span><span class="n">level</span><span class="p">]</span> <span class="o">=</span> <span class="n">dict_levels</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="p">[])</span> <span class="o">+</span> <span class="p">[</span><span class="n">root</span><span class="o">.</span><span class="n">val</span><span class="p">]</span>
+            <span class="n">_level</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dict_levels</span><span class="p">)</span>
+            <span class="n">_level</span><span class="p">(</span><span class="n">root</span><span class="o">.</span><span class="n">right</span><span class="p">,</span> <span class="n">level</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dict_levels</span><span class="p">)</span>
+
+        <span class="n">d</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">_level</span><span class="p">(</span><span class="n">root</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">d</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+
+<span class="k">class</span> <span class="nc">Solution</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">levelOrder</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">root</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        :type root: TreeNode</span>
+<span class="sd">        :rtype: List[List[int]]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">nodes</span><span class="p">,</span> <span class="n">vals</span> <span class="o">=</span> <span class="p">[</span><span class="n">root</span><span class="p">]</span> <span class="k">if</span> <span class="n">root</span> <span class="k">else</span> <span class="p">[],</span> <span class="p">[]</span>
+        <span class="k">while</span> <span class="n">nodes</span><span class="p">:</span>
+            <span class="n">vals</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span><span class="n">x</span><span class="o">.</span><span class="n">val</span><span class="p">,</span> <span class="n">nodes</span><span class="p">))</span>
+            <span class="n">nodes</span> <span class="o">=</span> <span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">nodes</span> <span class="k">if</span> <span class="n">j</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">[</span><span class="n">j</span><span class="o">.</span><span class="n">left</span><span class="p">,</span> <span class="n">j</span><span class="o">.</span><span class="n">right</span><span class="p">]])</span>
+        <span class="k">return</span> <span class="n">vals</span>
+</pre></div>
+
+
+<h3>100. Same Tree</h3>
+<p>&gt; Given two binary trees, write a function to check if they are equal or not.
+Two binary trees are considered equal if they are structurally identical and the nodes have the same value.</p>
+<p><a href="https://leetcode.com/subscribe/">Subscribe</a> to see which companies asked this question</p>
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="nx">Definition</span> <span class="k">for</span> <span class="nx">a</span> <span class="nx">binary</span> <span class="nx">tree</span> <span class="nx">node</span><span class="p">.</span>
+<span class="err">#</span> <span class="kr">class</span> <span class="nx">TreeNode</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>     <span class="nx">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">x</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">val</span> <span class="o">=</span> <span class="nx">x</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">left</span> <span class="o">=</span> <span class="nx">None</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">right</span> <span class="o">=</span> <span class="nx">None</span>
+
+<span class="kr">class</span> <span class="nx">Solution</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">def</span> <span class="nx">isSameTree</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">p</span><span class="p">,</span> <span class="nx">q</span><span class="p">)</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        :type p: TreeNode</span>
+<span class="s2">        :type q: TreeNode</span>
+<span class="s2">        :rtype: bool</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="nx">p</span> <span class="nx">is</span> <span class="nx">None</span> <span class="nx">and</span>  <span class="nx">q</span> <span class="nx">is</span> <span class="nx">None</span>:
+            <span class="kt">return</span> <span class="nx">True</span>
+        <span class="nx">elif</span> <span class="nx">p</span> <span class="nx">and</span> <span class="nx">q</span>:
+            <span class="kt">return</span> <span class="nx">p</span><span class="p">.</span><span class="nx">val</span> <span class="o">==</span> <span class="nx">q</span><span class="p">.</span><span class="nx">val</span> <span class="nx">and</span> <span class="nx">self</span><span class="p">.</span><span class="nx">isSameTree</span><span class="p">(</span><span class="nx">p</span><span class="p">.</span><span class="nx">left</span><span class="p">,</span> <span class="nx">q</span><span class="p">.</span><span class="nx">left</span><span class="p">)</span> <span class="nx">and</span> <span class="nx">self</span><span class="p">.</span><span class="nx">isSameTree</span><span class="p">(</span><span class="nx">p</span><span class="p">.</span><span class="nx">right</span><span class="p">,</span> <span class="nx">q</span><span class="p">.</span><span class="nx">right</span><span class="p">)</span>
+        <span class="k">else</span><span class="o">:</span>
+            <span class="k">return</span> <span class="nx">False</span>
+</pre></div>
+
+
+<h3>101. Symmetric Tree</h3>
+<blockquote>
+<p>Given a binary tree, check whether it is a mirror of itself (ie, symmetric around its center).
+For example, this binary tree [1,2,2,3,4,4,3]
+ is symmetric:</p>
+</blockquote>
+<p><code>1
+   / \
+  2   2
+ / \ / \
+3  4 4  3</code></p>
+<p>But the following [1,2,2,null,3,null,3]
+ is not:
+<code>1
+   / \
+  2   2
+   \   \
+   3    3</code>
+<strong>Note:</strong>Bonus points if you could solve it both recursively and iteratively.</p>
+<p><a href="https://leetcode.com/subscribe/">Subscribe</a> to see which companies asked this question</p>
+<div class="highlight"><pre><span></span><span class="c1"># Definition for a binary tree node.</span>
+<span class="c1"># class TreeNode(object):</span>
+<span class="c1">#     def __init__(self, x):</span>
+<span class="c1">#         self.val = x</span>
+<span class="c1">#         self.left = None</span>
+<span class="c1">#         self.right = None</span>
+
+<span class="s s-Atom">class</span> <span class="nv">Solution</span><span class="p">(</span><span class="s s-Atom">object</span><span class="p">)</span><span class="s s-Atom">:</span>
+
+    <span class="s s-Atom">def</span> <span class="nf">isPalindrome</span><span class="p">(</span><span class="s s-Atom">self</span><span class="p">,</span> <span class="s s-Atom">s</span><span class="p">)</span><span class="s s-Atom">:</span>
+        <span class="s s-Atom">return</span> <span class="s s-Atom">s</span> <span class="o">==</span> <span class="s s-Atom">s</span><span class="p">[</span><span class="s s-Atom">::-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="s s-Atom">def</span> <span class="nf">isSymmetric</span><span class="p">(</span><span class="s s-Atom">self</span><span class="p">,</span> <span class="s s-Atom">root</span><span class="p">)</span><span class="s s-Atom">:</span>
+        <span class="s s-Atom">if</span> <span class="s s-Atom">root</span> <span class="o">is</span> <span class="nv">None</span><span class="s s-Atom">:</span>
+            <span class="s s-Atom">return</span> <span class="nv">True</span>
+        <span class="s s-Atom">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="s s-Atom">root</span><span class="p">]</span>
+        <span class="s s-Atom">result</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="s s-Atom">while</span> <span class="nn">nodes</span><span class="p">:</span>
+            <span class="s s-Atom">level</span> <span class="o">=</span> <span class="nf">map</span><span class="p">(</span><span class="s s-Atom">lambda</span> <span class="nn">x</span><span class="p">:</span> <span class="s s-Atom">x</span><span class="p">.</span><span class="s s-Atom">val</span> <span class="s s-Atom">if</span> <span class="s s-Atom">x</span> <span class="s s-Atom">else</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="s s-Atom">nodes</span><span class="p">)</span>
+            <span class="s s-Atom">if</span> <span class="o">not</span> <span class="s s-Atom">self</span><span class="p">.</span><span class="nf">isPalindrome</span><span class="p">(</span><span class="s s-Atom">level</span><span class="p">)</span><span class="s s-Atom">:</span>
+                <span class="s s-Atom">return</span> <span class="nv">False</span>
+            <span class="s s-Atom">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="s s-Atom">j</span> <span class="s s-Atom">for</span> <span class="s s-Atom">i</span> <span class="s s-Atom">in</span> <span class="s s-Atom">nodes</span> <span class="s s-Atom">if</span> <span class="s s-Atom">i</span> <span class="s s-Atom">for</span> <span class="s s-Atom">j</span> <span class="s s-Atom">in</span> <span class="p">[</span><span class="s s-Atom">i</span><span class="p">.</span><span class="s s-Atom">left</span><span class="p">,</span> <span class="s s-Atom">i</span><span class="p">.</span><span class="s s-Atom">right</span><span class="p">]]</span>
+        <span class="s s-Atom">return</span> <span class="nv">True</span>
+</pre></div>
+
+
+<h1>104. Maximum Depth of Binary Tree</h1>
+<blockquote>
+<p>Given a binary tree, find its maximum depth.
+The maximum depth is the number of nodes along the longest path from the root node down to the farthest leaf node.</p>
+</blockquote>
+<p><a href="https://leetcode.com/subscribe/">Subscribe</a> to see which companies asked this question</p>
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="nx">Definition</span> <span class="k">for</span> <span class="nx">a</span> <span class="nx">binary</span> <span class="nx">tree</span> <span class="nx">node</span><span class="p">.</span>
+<span class="err">#</span> <span class="kr">class</span> <span class="nx">TreeNode</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>     <span class="nx">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">x</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">val</span> <span class="o">=</span> <span class="nx">x</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">left</span> <span class="o">=</span> <span class="nx">None</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">right</span> <span class="o">=</span> <span class="nx">None</span>
+
+<span class="kr">class</span> <span class="nx">Solution</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">def</span> <span class="nx">maxDepth</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">)</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        :type root: TreeNode</span>
+<span class="s2">        :rtype: int</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="nx">deep</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="nx">root</span> <span class="nx">is</span> <span class="nx">None</span>:
+            <span class="kt">return</span> <span class="nx">deep</span>
+        <span class="nx">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="nx">root</span><span class="p">]</span>
+
+        <span class="k">while</span> <span class="nx">nodes</span>:
+            <span class="kt">deep</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="nx">nodes</span> <span class="o">=</span> <span class="p">[</span><span class="nx">j</span> <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">nodes</span> <span class="k">if</span> <span class="nx">i</span> <span class="k">for</span> <span class="nx">j</span> <span class="k">in</span> <span class="p">[</span><span class="nx">i</span><span class="p">.</span><span class="nx">left</span><span class="p">,</span> <span class="nx">i</span><span class="p">.</span><span class="nx">right</span><span class="p">]</span> <span class="k">if</span> <span class="nx">j</span><span class="p">]</span>
+        <span class="k">return</span> <span class="nx">deep</span>
+
+<span class="err">#</span>  <span class="err">深度优先</span>
+
+<span class="kr">class</span> <span class="nx">Solution</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">def</span> <span class="nx">maxDepth</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">)</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        :type root: TreeNode</span>
+<span class="s2">        :rtype: int</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="mi">0</span> <span class="k">if</span> <span class="nx">root</span> <span class="o">==</span> <span class="nx">None</span> <span class="k">else</span> <span class="nx">max</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">maxDepth</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">left</span><span class="p">),</span><span class="nx">self</span><span class="p">.</span><span class="nx">maxDepth</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">right</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
+</pre></div>
+
+
+<p>### 111. Minimum Depth of Binary Tree
+ &gt; Given a binary tree, find its minimum depth.
+The minimum depth is the number of nodes along the shortest path from the root node down to the nearest leaf node.</p>
+<p><a href="https://leetcode.com/subscribe/">Subscribe</a> to see which companies asked this question</p>
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="nx">Definition</span> <span class="k">for</span> <span class="nx">a</span> <span class="nx">binary</span> <span class="nx">tree</span> <span class="nx">node</span><span class="p">.</span>
+<span class="err">#</span> <span class="kr">class</span> <span class="nx">TreeNode</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>     <span class="nx">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">x</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">val</span> <span class="o">=</span> <span class="nx">x</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">left</span> <span class="o">=</span> <span class="nx">None</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">right</span> <span class="o">=</span> <span class="nx">None</span>
+
+<span class="kr">class</span> <span class="nx">Solution</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">def</span> <span class="nx">minDepth</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">)</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        :type root: TreeNode</span>
+<span class="s2">        :rtype: int</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nx">not</span> <span class="nx">root</span>:
+            <span class="kt">return</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="nx">not</span> <span class="nx">root</span><span class="p">.</span><span class="nx">left</span> <span class="nx">or</span> <span class="nx">not</span> <span class="nx">root.right</span>:
+            <span class="kt">return</span> <span class="mi">1</span><span class="o">+</span><span class="nx">min</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">minDepth</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">left</span><span class="p">),</span><span class="nx">self</span><span class="p">.</span><span class="nx">minDepth</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">right</span><span class="p">))</span>
+        <span class="k">return</span> <span class="mi">1</span><span class="o">+</span><span class="nx">min</span><span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">minDepth</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">left</span><span class="p">),</span><span class="nx">self</span><span class="p">.</span><span class="nx">minDepth</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">right</span><span class="p">))</span>
+</pre></div>
+
+
+<h2>112. Path Sum</h2>
+<blockquote>
+<p>Given a binary tree and a sum, determine if the tree has a root-to-leaf path such that adding up all the values along the path equals the given sum.
+For example:
+Given the below binary tree and sum = 22, 
+    5 
+   / \ 
+ 4   8 
+ /     / \
+11 13 4 
+/ \    \ 
+7 2   1
+return true, as there exist a root-to-leaf path5-&gt;4-&gt;11-&gt;2
+which sum is 22.</p>
+</blockquote>
+<p>Subscribe to see which companies asked this question</p>
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="nx">Definition</span> <span class="k">for</span> <span class="nx">a</span> <span class="nx">binary</span> <span class="nx">tree</span> <span class="nx">node</span><span class="p">.</span>
+<span class="err">#</span> <span class="kr">class</span> <span class="nx">TreeNode</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>     <span class="nx">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">x</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">val</span> <span class="o">=</span> <span class="nx">x</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">left</span> <span class="o">=</span> <span class="nx">None</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">right</span> <span class="o">=</span> <span class="nx">None</span>
+
+<span class="kr">class</span> <span class="nx">Solution</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">def</span> <span class="nx">is_leef</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">if</span> <span class="nx">root</span><span class="p">.</span><span class="nx">left</span> <span class="nx">or</span> <span class="nx">root.right</span>:
+            <span class="kt">return</span> <span class="nx">False</span>
+        <span class="k">return</span> <span class="nx">True</span>
+
+    <span class="nx">def</span> <span class="nx">hasPathSum</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">,</span> <span class="nx">sum</span><span class="p">)</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        :type root: TreeNode</span>
+<span class="s2">        :type sum: int</span>
+<span class="s2">        :rtype: bool</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nx">root</span> <span class="o">==</span> <span class="nx">None</span>:<span class="kt">return</span> <span class="nx">False</span>
+        <span class="k">if</span> <span class="nx">root</span><span class="p">.</span><span class="nx">val</span> <span class="o">-</span> <span class="nx">sum</span> <span class="o">==</span> <span class="mi">0</span> <span class="nx">and</span> <span class="nx">root</span><span class="p">.</span><span class="nx">left</span> <span class="o">==</span> <span class="nx">None</span> <span class="nx">and</span> <span class="nx">root</span><span class="p">.</span><span class="nx">right</span> <span class="o">==</span> <span class="nx">None</span>:<span class="kt">return</span> <span class="nx">True</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">hasPathSum</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">left</span><span class="p">,</span> <span class="nx">sum</span><span class="o">-</span><span class="nx">root</span><span class="p">.</span><span class="nx">val</span><span class="p">)</span> <span class="nx">or</span> <span class="nx">self</span><span class="p">.</span><span class="nx">hasPathSum</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">right</span><span class="p">,</span> <span class="nx">sum</span><span class="o">-</span><span class="nx">root</span><span class="p">.</span><span class="nx">val</span><span class="p">)</span>
+
+
+<span class="err">###</span> <span class="nx">BFS</span>
+
+   <span class="k">if</span> <span class="nx">not</span> <span class="nx">root</span>:<span class="kt">return</span> <span class="nx">False</span>
+    <span class="k">if</span> <span class="nx">not</span> <span class="nx">root</span><span class="p">.</span><span class="nx">left</span> <span class="nx">and</span> <span class="nx">not</span> <span class="nx">root</span><span class="p">.</span><span class="nx">right</span> <span class="nx">and</span> <span class="nx">sum</span><span class="o">==</span><span class="nx">root.val</span>:
+        <span class="kt">return</span> <span class="nx">True</span>
+    <span class="nx">stack</span><span class="o">=</span><span class="p">[(</span><span class="nx">root</span><span class="p">,</span><span class="nx">root</span><span class="p">.</span><span class="nx">val</span><span class="p">)]</span>
+    <span class="k">while</span> <span class="nx">stack</span>:
+        <span class="kt">temp</span><span class="p">,</span><span class="nx">val</span><span class="o">=</span><span class="nx">stack</span><span class="p">.</span><span class="nx">pop</span><span class="p">()</span>
+        <span class="k">if</span> <span class="nx">not</span> <span class="nx">temp</span><span class="p">.</span><span class="nx">left</span> <span class="nx">and</span> <span class="nx">not</span> <span class="nx">temp</span><span class="p">.</span><span class="nx">right</span> <span class="nx">and</span> <span class="nx">val</span><span class="o">==</span><span class="nx">sum</span>:
+            <span class="kt">return</span> <span class="nx">True</span>
+        <span class="k">if</span> <span class="nx">temp.left</span>:
+            <span class="kt">stack.append</span><span class="p">((</span><span class="nx">temp</span><span class="p">.</span><span class="nx">left</span><span class="p">,</span><span class="nx">val</span><span class="o">+</span><span class="nx">temp</span><span class="p">.</span><span class="nx">left</span><span class="p">.</span><span class="nx">val</span><span class="p">))</span>
+        <span class="k">if</span> <span class="nx">temp.right</span>:
+            <span class="kt">stack.append</span><span class="p">((</span><span class="nx">temp</span><span class="p">.</span><span class="nx">right</span><span class="p">,</span><span class="nx">val</span><span class="o">+</span><span class="nx">temp</span><span class="p">.</span><span class="nx">right</span><span class="p">.</span><span class="nx">val</span><span class="p">))</span>
+    <span class="k">return</span> <span class="nx">False</span>
+</pre></div>
+
+
+<p>这道题根本没想到通过相减改变sum递归的求解做法，</p>
+<h3>98. Validate Binary Search Tree</h3>
+<blockquote>
+<p>Given a binary tree, determine if it is a valid binary search tree (BST).
+Assume a BST is defined as follows:
+The left subtree of a node contains only nodes with keys <strong>less than</strong> the node's key.
+The right subtree of a node contains only nodes with keys <strong>greater than</strong> the node's key.
+Both the left and right subtrees must also be binary search trees.
+<strong>Example 1:</strong>
+2 
+/ \
+ 1 3
+Binary tree [2,1,3], return true.
+<strong>Example 2:</strong>
+1 
+/ \
+2 3
+Binary tree [1,2,3], return false.</p>
+</blockquote>
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="nx">Definition</span> <span class="k">for</span> <span class="nx">a</span> <span class="nx">binary</span> <span class="nx">tree</span> <span class="nx">node</span><span class="p">.</span>
+<span class="err">#</span> <span class="kr">class</span> <span class="nx">TreeNode</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>     <span class="nx">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">x</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">val</span> <span class="o">=</span> <span class="nx">x</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">left</span> <span class="o">=</span> <span class="nx">None</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">right</span> <span class="o">=</span> <span class="nx">None</span>
+
+<span class="kr">class</span> <span class="nx">Solution</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">def</span> <span class="nx">inRotate</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">,</span> <span class="nx">result</span><span class="o">=</span><span class="p">[])</span><span class="o">:</span>
+        <span class="k">if</span> <span class="nx">root</span> <span class="nx">is</span> <span class="nx">None</span>:
+            <span class="kt">return</span> <span class="nx">result</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">inRotate</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">left</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span>
+        <span class="nx">result</span><span class="p">.</span><span class="nx">append</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">val</span><span class="p">)</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">inRotate</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">right</span><span class="p">,</span> <span class="nx">result</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">result</span> 
+
+    <span class="nx">def</span> <span class="nx">isValidBST</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">)</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        :type root: TreeNode</span>
+<span class="s2">        :rtype: bool</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">inRotate</span><span class="p">(</span><span class="nx">root</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="nx">start</span> <span class="o">=</span> <span class="nx">None</span>
+        <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">result</span>:
+            <span class="kt">if</span> <span class="nx">start</span> <span class="nx">is</span> <span class="nx">None</span>:
+                <span class="kt">start</span> <span class="o">=</span> <span class="nx">i</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="nx">i</span> <span class="o">&lt;=</span> <span class="nx">start</span>:
+                <span class="kt">return</span> <span class="nx">False</span>
+            <span class="nx">start</span> <span class="o">=</span> <span class="nx">i</span>
+
+        <span class="k">return</span> <span class="nx">True</span>    
+</pre></div>
+
+
+<div class="highlight"><pre><span></span><span class="err">#</span> <span class="nx">Definition</span> <span class="k">for</span> <span class="nx">a</span> <span class="nx">binary</span> <span class="nx">tree</span> <span class="nx">node</span><span class="p">.</span>
+<span class="err">#</span> <span class="kr">class</span> <span class="nx">TreeNode</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>     <span class="nx">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">x</span><span class="p">)</span><span class="o">:</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">val</span> <span class="o">=</span> <span class="nx">x</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">left</span> <span class="o">=</span> <span class="nx">None</span>
+<span class="err">#</span>         <span class="nx">self</span><span class="p">.</span><span class="nx">right</span> <span class="o">=</span> <span class="nx">None</span>
+
+<span class="kr">class</span> <span class="nx">Solution</span><span class="p">(</span><span class="nx">object</span><span class="p">)</span><span class="o">:</span>
+    <span class="nx">pre</span> <span class="o">=</span> <span class="nx">None</span>
+
+    <span class="nx">def</span> <span class="nx">isValidBST</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">root</span><span class="p">)</span><span class="o">:</span>
+        <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        :type root: TreeNode</span>
+<span class="s2">        :rtype: bool</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nx">root</span>:
+            <span class="kt">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">isValidBST</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">left</span><span class="p">)</span> <span class="nx">is</span> <span class="nx">False</span>:
+                <span class="kt">return</span> <span class="nx">False</span>
+
+            <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">pre</span> <span class="nx">and</span> <span class="nx">root</span><span class="p">.</span><span class="nx">val</span> <span class="o">&lt;=</span> <span class="nx">self.pre.val</span>:
+                <span class="kt">return</span> <span class="nx">False</span><span class="p">;</span>
+
+            <span class="nx">self</span><span class="p">.</span><span class="nx">pre</span> <span class="o">=</span> <span class="nx">root</span>
+            <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">isValidBST</span><span class="p">(</span><span class="nx">root</span><span class="p">.</span><span class="nx">right</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nx">True</span> 
+</pre></div>
+
+
+<h3>105. Construct Binary Tree from Preorder and Inorder Traversal</h3>
+<p>```</p>
+<p>Given preorder and inorder traversal of a tree, construct the binary tree.
+<strong>Note:</strong>You may assume that duplicates do not exist in the tree.</p>
+<p><a href="https://leetcode.com/subscribe/">Subscribe</a> to see which companies asked this question</p>
+<div class="highlight"><pre><span></span>深度优先，然后给挂了， 内存超过限制
+</pre></div>
+
+
+<h1>Definition for a binary tree node.</h1>
+<h1>class TreeNode(object):</h1>
+<h1>def <strong>init</strong>(self, x):</h1>
+<h1>self.val = x</h1>
+<h1>self.left = None</h1>
+<h1>self.right = None</h1>
+<p>class Solution(object):
+    def buildTree(self, preorder, inorder):
+        """
+        :type preorder: List[int]
+        :type inorder: List[int]
+        :rtype: TreeNode
+        """
+        if preorder:
+            value = preorder[0]
+            index = inorder.index(value)
+            root = TreeNode(value)
+            root.left = self.buildTree(preorder[1:index+1], inorder[0:index])
+            root.right = self.buildTree(preorder[index+1:], inorder[index+1:])
+            return root
+        return None</p>
+<div class="highlight"><pre><span></span>查找了下， 不用切片解决内存超出问题
+` we don&#39;t necessary need to slice the preorder array, when we are done with the left tree, the left half of the preorder array should already be empty**`
+</pre></div>
+
+
+<p>class Solution(object):
+    def buildTree(self, preorder, inorder):
+        """
+        :type preorder: List[int]
+        :type inorder: List[int]
+        :rtype: TreeNode
+        """</p>
+<div class="highlight"><pre><span></span>    if not preorder or not inorder:
+        return None
+
+    rootValue = preorder.pop(0)
+    root = TreeNode(rootValue)
+    inorderIndex = inorder.index(rootValue)
+
+    root.left = self.buildTree(preorder, inorder[:inorderIndex])
+    root.right = self.buildTree(preorder, inorder[inorderIndex+1:])
+
+    return root
+</pre></div>
+
+
+<div class="highlight"><pre><span></span>然后尝试广度优先
+</pre></div>
+
+
+<p>```</p>
+<p><a href="https://discuss.leetcode.com/topic/35826/python-recursion-version-and-iteration-version-easy-to-understand/2">最好的解答</a></p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/leetcode-shu-ju-jie-gou-xian-xing-biao.html" rel="bookmark"
+                           title="Permalink to leetcode-数据结构-线性表">leetcode-数据结构-线性表</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-07-09T10:20:00+00:00">
+                Published: 六 09 七月 2016
+        </abbr>
+
+<p>In <a href="/category/shu-ju-jie-gou.html">数据结构</a>.</p>
+<p>tags: <a href="/tag/python.html">Python</a> <a href="/tag/shu-ju-jie-gou.html">数据结构</a> </p>
+</footer><!-- /.post-info -->                <h4>19 . Remove Nth Node From End of List</h4>
+<p><code>Given a linked list, remove the *n*th
+ node from the end of list and return its head.</code>
+<strong> For example, </strong></p>
+<blockquote>
+<p>Given linked list: <strong>1-&gt;2-&gt;3-&gt;4-&gt;5</strong>, and <strong><em>n</em> = 2</strong>. After removing the second node from the end, the linked list …</p></blockquote>
+                <a class="readmore" href="/leetcode-shu-ju-jie-gou-xian-xing-biao.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
+                </ol><!-- /#posts-list -->
+                </section><!-- /#content -->
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
+</body>
+</html>

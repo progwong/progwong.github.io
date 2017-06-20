@@ -1,40 +1,38 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!--
-Design by Free CSS Templates
-http://www.freecsstemplates.org
-Released for free under a Creative Commons Attribution 2.5 License
-
-Name       : Brown Stone  
-Description: A two-column, fixed-width design with dark color scheme.
-Version    : 1.0
-Released   : 20100928
-
--->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta name="keywords" content="" />
-<meta name="description" content="" />
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>Progwong - Python</title>
-<link href="/theme/css/style.css" rel="stylesheet" type="text/css" media="screen" />
-<link href="/" type="application/atom+xml" rel="alternate" title="Progwong ATOM Feed" />
+        <meta charset="utf-8" />
+        <title>A Pelican Blog - Python</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
 </head>
-<body>
-<div id="wrapper">
-	<div id="page">
-		<div id="page-bgtop">
-			<div id="page-bgbtm">
- 
-        
-				<div id="content">
-					<div class="post">
-						<h2 class="title"><a href="/python-han-shu-chuan-can-wen-ti-xiao-ji.html">Python 函数传参问题小记</a></h2>
-						<p class="meta"><span class="date">Le  </span><span class="posted">Par <a href="#">Progwong</a></span><span>&nbsp; | Catégorie : <a href="/category/python.html">Python</a></span></p>
-					<p class="meta">Tags : <span><a href="/tag/python.html">Python</a> / </span>
-</p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <p>Summary: ssssssss</p>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
+                    <li><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
+                    <li class="active"><a href="/category/python.html">Python</a></li>
+                    <li><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+
+            <aside id="featured" class="body">
+                <article>
+                    <h1 class="entry-title"><a href="/python-han-shu-chuan-can-wen-ti-xiao-ji.html">Python 函数传参问题小记</a></h1>
+<footer class="post-info">
+        <abbr class="published" title="2016-12-03T10:20:00+00:00">
+                Published: 六 03 十二月 2016
+        </abbr>
+
+<p>In <a href="/category/python.html">Python</a>.</p>
+<p>tags: <a href="/tag/python.html">Python</a> </p>
+</footer><!-- /.post-info --><p>Summary: ssssssss</p>
 <p>上次利用闭包的特性写一个计数器 ，代码是这样的：</p>
 <div class="highlight"><pre><span></span>def generate_counter():
     CNT = 0
@@ -175,79 +173,57 @@ print(b)        # [5]
 <p>所以当<code>CNT</code>为string的时候, 我们在函数内是无法修改的， 因为我们只是复制了一份他的引用。 当<code>CNT</code>为list的时候， 我们却可以在函数内部修改他。所以我们将<code>CNT</code>定义为[0], 然后通过 <code>CNT[0] = CNT[0]  +  1</code> 就可以在函数内部在不需要声明的情况下修改<code>CNT</code>了。</p>
 <h5>饶了一圈下来， 好像也没说什么。 不过还是很有收获......</h5>
 <h2>如果解释的有什么不合适的地方欢迎拍砖</h2>
-<p>分享一个链接 <code>https://github.com/taizilongxu/interview_python</code> ， 从这里面解决了很多这篇文章提到的疑惑。</p>	
-						</div>
-					</div>
-	
-			                <div class="post">
-			                        <h2 class="title">Autres articles</h2>
-			                </div>
-        
- 
-			                <div class="post summary">
-						<h2 class="title"><a href="/pythonpa-chong-mo-ni-deng-lu-de-hei-mo-fa.html">Python爬虫模拟登录的黑魔法</a></h2>
-						<p class="meta"><span class="date">Le 三 19 十月 2016</span><span class="posted">Par <a href="#">Progwong</a></span></p>
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <p>今天用 requests + BeautifulSoup 抓取 aliexpress 的时候， 在模拟登录时候出现了很多问题， 提交数据时会对密码等一些字段加密， 而且提交一大堆不知名的字段， 大概有二十多项。 看到那么多字段， 整个人就不好了， 作为一个懒人， 准备绕过这个坑。</p>
+<p>分享一个链接 <code>https://github.com/taizilongxu/interview_python</code> ， 从这里面解决了很多这篇文章提到的疑惑。</p>                </article>
+            </aside><!-- /#featured -->
+                <section id="content" class="body">
+                    <h1>Other articles</h1>
+                    <hr />
+                    <ol id="posts-list" class="hfeed">
+
+            <li><article class="hentry">
+                <header>
+                    <h1><a href="/pythonpa-chong-mo-ni-deng-lu-de-hei-mo-fa.html" rel="bookmark"
+                           title="Permalink to Python爬虫模拟登录的黑魔法">Python爬虫模拟登录的黑魔法</a></h1>
+                </header>
+
+                <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-10-19T20:20:00+00:00">
+                Published: 三 19 十月 2016
+        </abbr>
+
+<p>In <a href="/category/python.html">Python</a>.</p>
+<p>tags: <a href="/tag/python.html">Python</a> <a href="/tag/pa-chong.html">爬虫</a> </p>
+</footer><!-- /.post-info -->                <p>今天用 requests + BeautifulSoup 抓取 aliexpress 的时候， 在模拟登录时候出现了很多问题， 提交数据时会对密码等一些字段加密， 而且提交一大堆不知名的字段， 大概有二十多项。 看到那么多字段， 整个人就不好了， 作为一个懒人， 准备绕过这个坑。</p>
 <p><strong>大概思路是这样， 通过 selenium 打开浏览器， 模拟登录。 获取cookies ，并将cookies以文件的形式保存到本地。 当我们使用requests打开页面的时候就可以用本地的cookies。        因为 通过selenium打开浏览器的方式登陆没有那么多限制， 只需要模拟登录流程（ 输入帐号密码， 点击登录即可登陆）。 而且selenium可以模拟各种浏览器， 亦可以在命令行下实现浏览器功能。</strong></p>
 <h4>1: 通过selenium 登录</h4>
 <div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">selenium</span> <span class="kn">import</span> <span class="n">webdriver</span>
 <span class="kn">from</span> <span class="nn">selenium.webdriver.common.keys</span> <span class="kn">import</span> <span class="n">Keys</span>
 
 <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span> <span class="n">browser</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="n">browser …</span></pre></div>	
-						 <a class="readmore" href="/pythonpa-chong-mo-ni-deng-lu-de-hei-mo-fa.html">Lire la suite …</a>
-						</div>
-					</div>
-					<div style="clear: both;">&nbsp;</div>
-				</div>
-				<div id="sidebar">
-					<div id="logo">
-						<h1><a href="">Progwong</a></h1>
-					</div>
-					<div id="menu">
-						<ul>
-							<li ><a href="">Home</a></li>
-							<li ><a href="/archives.html">Archives</a></li>
-						</ul>
-					</div>
-					<ul>
-						<li>
-							<h2>Catégories</h2>
-							<ul>
-								 <li ><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
-								 <li ><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
-								 <li class="active"><a href="/category/python.html">Python</a></li>
-								 <li ><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>
-							</ul>
-						</li>
-						<li>
-						        <h2>Tags</h2>
-						        <ul>
-                                                                <li><a href="/tag/python.html">Python</a></li>
-                                                                <li><a href="/tag/dai-ma-you-hua.html">代码优化</a></li>
-                                                                <li><a href="/tag/ji-suan-ji-wang-luo.html">计算机网络</a></li>
-                                                                <li><a href="/tag/pa-chong.html">爬虫</a></li>
-                                                                <li><a href="/tag/shu-ju-jie-gou.html">数据结构</a></li>
-						        </ul>
-						</li>
-						
-						
-					</ul>
-				</div>
-				<!-- end #sidebar -->
-				<div style="clear: both;">&nbsp;</div>
-			</div>
-		</div>
-	</div>
-	<!-- end #page -->
+    <span class="n">browser …</span></pre></div>
+                <a class="readmore" href="/pythonpa-chong-mo-ni-deng-lu-de-hei-mo-fa.html">read more</a>
+                </div><!-- /.entry-content -->
+            </article></li>
+                </ol><!-- /#posts-list -->
+                </section><!-- /#content -->
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
 
-<div id="footer">
-	<p>Copyright (c) 2008 Sitename.com. All rights reserved. Design by <a href="http://www.freecsstemplates.org/">CSS Templates</a>.</p>
-	<p>Proudly powered by <a href="http://alexis.notmyidea.org/pelican/">pelican</a>, which takes great advantages of <a href="http://python.org">python</a>.
-</p>
-</div>
-<!-- end #footer -->
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
 </body>
 </html>

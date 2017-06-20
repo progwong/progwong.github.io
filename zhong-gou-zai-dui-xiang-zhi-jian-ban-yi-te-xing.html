@@ -1,0 +1,253 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<!--
+Design by Free CSS Templates
+http://www.freecsstemplates.org
+Released for free under a Creative Commons Attribution 2.5 License
+
+Name       : Brown Stone  
+Description: A two-column, fixed-width design with dark color scheme.
+Version    : 1.0
+Released   : 20100928
+
+-->
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta name="keywords" content="" />
+<meta name="description" content="" />
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>重构——在对象之间搬移特性</title>
+<link href="/theme/css/style.css" rel="stylesheet" type="text/css" media="screen" />
+<link href="/" type="application/atom+xml" rel="alternate" title="Progwong ATOM Feed" />
+</head>
+<body>
+<div id="wrapper">
+	<div id="page">
+		<div id="page-bgtop">
+			<div id="page-bgbtm">
+    
+                        	<div id="content">
+					<div class="post">
+						<h2 class="title"><a href="zhong-gou-zai-dui-xiang-zhi-jian-ban-yi-te-xing.html">重构——在对象之间搬移特性</a></h2>
+						<p class="meta"><span class="date">Le 一 16 一月 2017 </span><span class="posted">Par <a href="#">Progwong</a></span><span>&nbsp; | Catégorie : <a href="/category/dai-ma-you-hua.html">代码优化</a></span></p>
+					<p class="meta">Tags : <span><a href="/tag/python.html">Python</a> / </span>
+<span><a href="/tag/dai-ma-you-hua.html">代码优化</a> / </span>
+</p>	
+						<div style="clear: both;">&nbsp;</div>
+						<div class="entry">
+						 <h5>Move Method(搬移函数)</h5>
+<p><code>某个类中的函数与其他类有着更多的交流，在该函数最长引用的类中建立一个有着类似行为的心函数， 或者是将旧函数完全移除。一旦发现有可能搬移的函数， 观察调用它的那一端， 根据 函数与哪个对象交流的比较多决定其移动路径</code></p>
+<p>Example </p>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Account</span>:
+    <span class="kt">def</span>  <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">account_type</span><span class="p">,</span> <span class="nx">days_own_drawn</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">account_type</span> <span class="o">=</span> <span class="nx">account_type</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">days_own_drawn</span> <span class="o">=</span> <span class="nx">days_own_drawn</span>
+
+    <span class="nx">def</span> <span class="nx">over_draft_charge</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">account_type</span><span class="p">.</span><span class="nx">is_premium</span><span class="p">()</span><span class="o">:</span>
+            <span class="nx">result</span> <span class="o">=</span>  <span class="mi">10</span>
+            <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">days_own_drawn</span> <span class="o">&gt;</span> <span class="nx">7</span>:
+                <span class="kt">result</span> <span class="o">+=</span> <span class="p">(</span><span class="nx">self</span><span class="p">.</span><span class="nx">days_over_drawn</span> <span class="o">-</span> <span class="mi">7</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.85</span>
+         <span class="k">return</span> <span class="nx">result</span>
+
+    <span class="nx">def</span> <span class="nx">bank_charge</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="mf">4.5</span>
+        <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">days_over_drawn</span> <span class="o">&gt;</span> <span class="nx">0</span>:
+            <span class="kt">result</span> <span class="o">+=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">over_draft_charge</span><span class="p">()</span>
+        <span class="k">return</span> <span class="nx">result</span>
+
+<span class="err">#</span> <span class="err">每一种不同的账户都有不同的透支金额，</span> <span class="err">我们要将</span> <span class="nx">over_draft_charge</span> <span class="err">搬到</span> <span class="nx">AccountType</span> <span class="err">中去。</span>
+
+<span class="err">#</span> <span class="err">移动</span> <span class="nx">over_draft_charge</span> <span class="err">到</span> <span class="nx">AccountType中</span>
+
+<span class="kr">class</span> <span class="nx">AccountType</span>:
+    <span class="kt">def</span> <span class="nx">is_premiun</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">pass</span>
+
+    <span class="nx">def</span> <span class="nx">over_draft_charge</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">account</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">if</span> <span class="p">.</span><span class="nx">is_premium</span><span class="p">()</span><span class="o">:</span>
+            <span class="nx">result</span> <span class="o">=</span>  <span class="mi">10</span>
+            <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">days_own_drawn</span> <span class="o">&gt;</span> <span class="nx">7</span>:
+                <span class="kt">result</span> <span class="o">+=</span> <span class="p">(</span><span class="nx">account</span><span class="p">.</span><span class="nx">days_over_drawn</span> <span class="o">-</span> <span class="mi">7</span><span class="p">)</span> <span class="o">*</span> <span class="mf">0.85</span>
+         <span class="k">return</span> <span class="nx">result</span>
+
+
+<span class="kr">class</span> <span class="nx">Account</span><span class="o">:</span>
+   <span class="s2">&quot;&quot;&quot;  去掉 Account 中的 over_draft_charge 函数， 在 bank_chage 函数中调用AccountType over_draft_charge&quot;&quot;&quot;</span>
+    <span class="nx">def</span>  <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">account_type</span><span class="p">,</span> <span class="nx">days_own_drawn</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">account_type</span> <span class="o">=</span> <span class="nx">account_type</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">days_own_drawn</span> <span class="o">=</span> <span class="nx">days_own_drawn</span>
+
+    <span class="nx">def</span> <span class="nx">bank_charge</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">result</span> <span class="o">=</span> <span class="mf">4.5</span>
+        <span class="k">if</span> <span class="nx">self</span><span class="p">.</span><span class="nx">days_over_drawn</span> <span class="o">&gt;</span> <span class="nx">0</span>:
+            <span class="kt">result</span> <span class="o">+=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">account</span><span class="p">.</span><span class="nx">over_draft_charge</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nx">result</span>
+</pre></div>
+
+
+<h5>Move Field(搬移字段)</h5>
+<p><code>在程序中，被其所驻类之外的另一个类更多的用到。 在目标类新建一个字段， 修改源字段所有用户， 另它们改用新字段。</code></p>
+<p>Example </p>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Account</span> :
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">account_type</span><span class="p">,</span> <span class="nx">interest_rate</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">account_type</span> <span class="o">=</span> <span class="nx">account_type</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">interest_rate</span> <span class="o">=</span> <span class="nx">interest_rate</span>
+
+    <span class="nx">def</span> <span class="nx">interest_for_amount_days</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">amount</span><span class="p">,</span> <span class="nx">days</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">interest_rate</span> <span class="o">*</span> <span class="nx">amount</span> <span class="o">*</span> <span class="nx">days</span> <span class="o">/</span> <span class="mi">365</span>
+
+<span class="err">#</span> <span class="err">将</span><span class="nx">interest_rate</span> <span class="err">搬移到</span><span class="nx">AccountType中</span>
+<span class="kr">class</span> <span class="nx">AccountType</span>:
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">interest_rate</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">interest_rate</span> <span class="o">=</span> <span class="nx">interest</span>
+
+     <span class="nx">def</span> <span class="nx">get_interest_rate</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+         <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">interest_rate</span>
+
+     <span class="nx">def</span> <span class="nx">set_interest_rate</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">rate</span><span class="p">)</span><span class="o">:</span>
+         <span class="nx">self</span><span class="p">.</span><span class="nx">interest_rate</span> <span class="o">=</span> <span class="nx">rate</span>
+
+<span class="kr">class</span> <span class="nx">Account</span>:
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">account_type</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">account_type</span> <span class="o">=</span> <span class="nx">account_type</span>
+
+    <span class="nx">def</span> <span class="nx">interest_for_amount_days</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">amount</span><span class="p">,</span> <span class="nx">days</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">type</span><span class="p">.</span><span class="nx">get_interest_rate</span><span class="p">()</span> <span class="o">*</span> <span class="nx">account</span> <span class="o">*</span> <span class="nx">days</span>  <span class="o">/</span>   <span class="mi">365</span>
+</pre></div>
+
+
+<h5>Extract Class (提炼类)</h5>
+<p><code>如果某些数据和某些函数总是一起出现， 某些数据经常同时变化甚至彼此相依时， 就要将他们分离出去——新建一个新类， 将相关字字段和函数搬移到新类，并建立旧类访问新类的连接</code></p>
+<p>Example </p>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Person</span>:
+     <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">name</span><span class="p">,</span> <span class="nx">office_area_code</span><span class="p">,</span> <span class="nx">office_number</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span> 
+        <span class="nx">self</span><span class="p">.</span><span class="nx">office_area_code</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">office_area_code</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">office_number</span> <span class="o">=</span> <span class="nx">office_number</span>
+
+    <span class="nx">def</span> <span class="nx">get_telephone_numer</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+         <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">office_area_code</span> <span class="o">+</span> <span class="nx">self</span><span class="p">.</span><span class="nx">office_number</span>
+
+    <span class="err">#</span> <span class="err">将电话号码分离到单独的一个类中</span>
+    <span class="kr">class</span> <span class="nx">TelePhoneNumber</span>:
+        <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">area_code</span><span class="p">,</span> <span class="kt">number</span><span class="p">)</span><span class="o">:</span>
+            <span class="nx">self</span><span class="p">.</span><span class="nx">area_code</span> <span class="o">=</span> <span class="nx">code</span> 
+            <span class="nx">self</span><span class="p">.</span><span class="kt">number</span> <span class="o">=</span> <span class="kt">number</span> 
+
+        <span class="nx">def</span> <span class="nx">get_telephone_number</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+            <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">area_code</span> <span class="o">+</span> <span class="nx">self</span><span class="p">.</span><span class="kt">number</span>
+
+    <span class="kr">class</span> <span class="nx">Person</span>:
+        <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">telephone_number</span><span class="p">)</span><span class="o">:</span>
+            <span class="nx">self</span><span class="p">.</span><span class="nx">name</span> <span class="o">=</span> <span class="nx">name</span> 
+            <span class="nx">self</span><span class="p">.</span><span class="nx">telephone_number</span> <span class="o">=</span> <span class="nx">telephone_number</span>
+
+        <span class="nx">def</span> <span class="nx">get_telephone_number</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+            <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">telephone_number</span><span class="p">.</span><span class="nx">get_telephone_number</span><span class="p">()</span>
+</pre></div>
+
+
+<h5>Inline Class(将类内联化)</h5>
+<p><code>将类的所有特性搬到一个类中，然后移除原类， Inline 
+Class 刚好与Extract Class 相反</code></p>
+<h5>Hide Delegate(隐藏委托关系)</h5>
+<p><code>在服务器对象上放置一个简单的委托函数， 将委托关系隐藏起来， 从而去除这种依赖 。即便将来发生委托关系上的变化，变化也只限制在服务对象中不波及客户（只修改服务对象中的关系）</code></p>
+<p>Example</p>
+<div class="highlight"><pre><span></span><span class="kr">class</span> <span class="nx">Person</span>:
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">self</span><span class="p">,</span> <span class="nx">department</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">department</span> <span class="o">=</span> <span class="nx">self</span><span class="p">.</span><span class="nx">department</span>
+
+    <span class="nx">def</span> <span class="nx">get_department</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">department</span>
+
+ <span class="kr">class</span> <span class="nx">Department</span>:
+    <span class="kt">def</span> <span class="nx">__init__</span><span class="p">(</span><span class="nx">department_code</span><span class="p">,</span> <span class="nx">person</span><span class="p">)</span><span class="o">:</span>
+        <span class="nx">self</span><span class="p">.</span><span class="nx">department</span> <span class="o">=</span> <span class="nx">department</span> 
+        <span class="nx">self</span><span class="p">.</span><span class="nx">person</span> <span class="o">=</span> <span class="nx">person</span>
+
+    <span class="nx">def</span> <span class="nx">get_manager</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="o">:</span>
+       <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">person</span>
+
+<span class="err">#</span>  <span class="o">&gt;&gt;&gt;</span> <span class="nx">manager</span> <span class="o">=</span> <span class="nx">person</span><span class="p">.</span><span class="nx">get_department</span><span class="p">().</span><span class="nx">get_manager</span><span class="p">()</span>    
+
+<span class="err">#</span> <span class="err">通过部门知道默认的经理</span> <span class="err">这暴露了</span><span class="nx">Department的工作原理</span><span class="err">，</span> <span class="err">如果对客户隐藏</span><span class="nx">Department</span><span class="err">，</span> <span class="err">可以减少耦合。</span> 
+
+<span class="kr">class</span> <span class="nx">Person</span><span class="o">:</span>
+<span class="s2">&quot;&quot;&quot;我们在Person中建立一个简单的委托关系&quot;&quot;&quot;</span>
+    <span class="nx">def</span> <span class="nx">get_manager</span><span class="p">(</span><span class="nx">self</span><span class="p">)</span><span class="err">：</span>
+        <span class="k">return</span> <span class="nx">self</span><span class="p">.</span><span class="nx">department</span><span class="p">.</span><span class="nx">get_manager</span><span class="p">()</span>
+</pre></div>
+
+
+<h4>Remove Middle Man (移除中间人)</h4>
+<p><code>如果大量函数都隐藏依赖关系，为了简单明了我们可以取出一部分委托行为</code></p>
+<h4>Introduce Foreign Method(引入外加函数)</h4>
+<p><code>为服务类增加一个函数， 但你无法修改这个类。需要在客户类中建立一个函数， 并以第一参数形式传入一个服务器实例。 当增加的函数过多数， 应该使用 Introduce Local Extension</code></p>
+<p>Example</p>
+<div class="highlight"><pre><span></span><span class="n">form</span> <span class="n">datetime</span><span class="o">.</span><span class="n">datetime</span> <span class="kn">import</span> <span class="nn">date</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="n">d</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">d</span><span class="o">.</span><span class="n">day</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># 重构后</span>
+<span class="k">def</span> <span class="nf">get_next_day</span><span class="p">(</span><span class="n">_day</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">date</span><span class="p">(</span><span class="n">_day</span><span class="o">.</span><span class="n">year</span><span class="p">,</span> <span class="n">_day</span><span class="o">.</span><span class="n">month</span><span class="p">,</span> <span class="n">_day</span><span class="o">.</span><span class="n">day</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="c1"># &gt;&gt;&gt; start = get_next_day(_d)</span>
+</pre></div>
+
+
+<h3>introduce Local Extension(引入本地扩展)</h3>
+<p><code>建立一个新类， 使它包含这些额外函数。让这个扩展品成为源类的子类或者包装类</code></p>	
+						</div>
+					</div>
+			      
+					<div style="clear: both;">&nbsp;</div>
+				</div>
+				<!-- end #content -->
+				<div id="sidebar">
+					<div id="logo">
+						<h1><a href="">Progwong</a></h1>
+					</div>
+					<div id="menu">
+						<ul>
+							<li ><a href="">Home</a></li>
+							<li ><a href="/archives.html">Archives</a></li>
+						</ul>
+					</div>
+					<ul>
+						<li>
+							<h2>Catégories</h2>
+							<ul>
+								 <li class="active"><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
+								 <li ><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
+								 <li ><a href="/category/python.html">Python</a></li>
+								 <li ><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>
+							</ul>
+						</li>
+						<li>
+						        <h2>Tags</h2>
+						        <ul>
+                                                                <li><a href="/tag/python.html">Python</a></li>
+                                                                <li><a href="/tag/dai-ma-you-hua.html">代码优化</a></li>
+                                                                <li><a href="/tag/ji-suan-ji-wang-luo.html">计算机网络</a></li>
+                                                                <li><a href="/tag/pa-chong.html">爬虫</a></li>
+                                                                <li><a href="/tag/shu-ju-jie-gou.html">数据结构</a></li>
+						        </ul>
+						</li>
+						
+						
+					</ul>
+				</div>
+				<!-- end #sidebar -->
+				<div style="clear: both;">&nbsp;</div>
+			</div>
+		</div>
+	</div>
+	<!-- end #page -->
+
+<div id="footer">
+	<p>Copyright (c) 2008 Sitename.com. All rights reserved. Design by <a href="http://www.freecsstemplates.org/">CSS Templates</a>.</p>
+	<p>Proudly powered by <a href="http://alexis.notmyidea.org/pelican/">pelican</a>, which takes great advantages of <a href="http://python.org">python</a>.
+</p>
+</div>
+<!-- end #footer -->
+</body>
+</html>

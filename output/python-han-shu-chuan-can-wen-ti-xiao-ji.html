@@ -1,39 +1,43 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!--
-Design by Free CSS Templates
-http://www.freecsstemplates.org
-Released for free under a Creative Commons Attribution 2.5 License
-
-Name       : Brown Stone  
-Description: A two-column, fixed-width design with dark color scheme.
-Version    : 1.0
-Released   : 20100928
-
--->
-<html xmlns="http://www.w3.org/1999/xhtml">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-<meta name="keywords" content="" />
-<meta name="description" content="" />
-<meta http-equiv="content-type" content="text/html; charset=utf-8" />
-<title>Python 函数传参问题小记</title>
-<link href="/theme/css/style.css" rel="stylesheet" type="text/css" media="screen" />
-<link href="/" type="application/atom+xml" rel="alternate" title="Progwong ATOM Feed" />
+        <meta charset="utf-8" />
+        <title>Python 函数传参问题小记</title>
+        <link rel="stylesheet" href="/theme/css/main.css" />
+        <link href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate" title="A Pelican Blog Atom Feed" />
+
+        <!--[if IE]>
+            <script src="https://html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+        <![endif]-->
 </head>
-<body>
-<div id="wrapper">
-	<div id="page">
-		<div id="page-bgtop">
-			<div id="page-bgbtm">
-    
-                        	<div id="content">
-					<div class="post">
-						<h2 class="title"><a href="python-han-shu-chuan-can-wen-ti-xiao-ji.html">Python 函数传参问题小记</a></h2>
-						<p class="meta"><span class="date">Le 六 03 十二月 2016 </span><span class="posted">Par <a href="#">Progwong</a></span><span>&nbsp; | Catégorie : <a href="/category/python.html">Python</a></span></p>
-					<p class="meta">Tags : <span><a href="/tag/python.html">Python</a> / </span>
-</p>	
-						<div style="clear: both;">&nbsp;</div>
-						<div class="entry">
-						 <p>Summary: ssssssss</p>
+
+<body id="index" class="home">
+        <header id="banner" class="body">
+                <h1><a href="/">A Pelican Blog </a></h1>
+                <nav><ul>
+                    <li><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
+                    <li><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
+                    <li class="active"><a href="/category/python.html">Python</a></li>
+                    <li><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>
+                </ul></nav>
+        </header><!-- /#banner -->
+<section id="content" class="body">
+  <article>
+    <header>
+      <h1 class="entry-title">
+        <a href="/python-han-shu-chuan-can-wen-ti-xiao-ji.html" rel="bookmark"
+           title="Permalink to Python 函数传参问题小记">Python 函数传参问题小记</a></h1>
+    </header>
+
+    <div class="entry-content">
+<footer class="post-info">
+        <abbr class="published" title="2016-12-03T10:20:00+00:00">
+                Published: 六 03 十二月 2016
+        </abbr>
+
+<p>In <a href="/category/python.html">Python</a>.</p>
+<p>tags: <a href="/tag/python.html">Python</a> </p>
+</footer><!-- /.post-info -->      <p>Summary: ssssssss</p>
 <p>上次利用闭包的特性写一个计数器 ，代码是这样的：</p>
 <div class="highlight"><pre><span></span>def generate_counter():
     CNT = 0
@@ -174,59 +178,28 @@ print(b)        # [5]
 <p>所以当<code>CNT</code>为string的时候, 我们在函数内是无法修改的， 因为我们只是复制了一份他的引用。 当<code>CNT</code>为list的时候， 我们却可以在函数内部修改他。所以我们将<code>CNT</code>定义为[0], 然后通过 <code>CNT[0] = CNT[0]  +  1</code> 就可以在函数内部在不需要声明的情况下修改<code>CNT</code>了。</p>
 <h5>饶了一圈下来， 好像也没说什么。 不过还是很有收获......</h5>
 <h2>如果解释的有什么不合适的地方欢迎拍砖</h2>
-<p>分享一个链接 <code>https://github.com/taizilongxu/interview_python</code> ， 从这里面解决了很多这篇文章提到的疑惑。</p>	
-						</div>
-					</div>
-			      
-					<div style="clear: both;">&nbsp;</div>
-				</div>
-				<!-- end #content -->
-				<div id="sidebar">
-					<div id="logo">
-						<h1><a href="">Progwong</a></h1>
-					</div>
-					<div id="menu">
-						<ul>
-							<li ><a href="">Home</a></li>
-							<li ><a href="/archives.html">Archives</a></li>
-						</ul>
-					</div>
-					<ul>
-						<li>
-							<h2>Catégories</h2>
-							<ul>
-								 <li ><a href="/category/dai-ma-you-hua.html">代码优化</a></li>
-								 <li ><a href="/category/ji-suan-ji-ji-chu.html">计算机基础</a></li>
-								 <li class="active"><a href="/category/python.html">Python</a></li>
-								 <li ><a href="/category/shu-ju-jie-gou.html">数据结构</a></li>
-							</ul>
-						</li>
-						<li>
-						        <h2>Tags</h2>
-						        <ul>
-                                                                <li><a href="/tag/python.html">Python</a></li>
-                                                                <li><a href="/tag/dai-ma-you-hua.html">代码优化</a></li>
-                                                                <li><a href="/tag/ji-suan-ji-wang-luo.html">计算机网络</a></li>
-                                                                <li><a href="/tag/pa-chong.html">爬虫</a></li>
-                                                                <li><a href="/tag/shu-ju-jie-gou.html">数据结构</a></li>
-						        </ul>
-						</li>
-						
-						
-					</ul>
-				</div>
-				<!-- end #sidebar -->
-				<div style="clear: both;">&nbsp;</div>
-			</div>
-		</div>
-	</div>
-	<!-- end #page -->
+<p>分享一个链接 <code>https://github.com/taizilongxu/interview_python</code> ， 从这里面解决了很多这篇文章提到的疑惑。</p>
+    </div><!-- /.entry-content -->
 
-<div id="footer">
-	<p>Copyright (c) 2008 Sitename.com. All rights reserved. Design by <a href="http://www.freecsstemplates.org/">CSS Templates</a>.</p>
-	<p>Proudly powered by <a href="http://alexis.notmyidea.org/pelican/">pelican</a>, which takes great advantages of <a href="http://python.org">python</a>.
-</p>
-</div>
-<!-- end #footer -->
+  </article>
+</section>
+        <section id="extras" class="body">
+                <div class="social">
+                        <h2>social</h2>
+                        <ul>
+                            <li><a href="/feeds/all.atom.xml" type="application/atom+xml" rel="alternate">atom feed</a></li>
+
+                        </ul>
+                </div><!-- /.social -->
+        </section><!-- /#extras -->
+
+        <footer id="contentinfo" class="body">
+                <address id="about" class="vcard body">
+                Proudly powered by <a href="http://getpelican.com/">Pelican</a>, which takes great advantage of <a href="http://python.org">Python</a>.
+                </address><!-- /#about -->
+
+                <p>The theme is by <a href="http://coding.smashingmagazine.com/2009/08/04/designing-a-html-5-layout-from-scratch/">Smashing Magazine</a>, thanks!</p>
+        </footer><!-- /#contentinfo -->
+
 </body>
 </html>
